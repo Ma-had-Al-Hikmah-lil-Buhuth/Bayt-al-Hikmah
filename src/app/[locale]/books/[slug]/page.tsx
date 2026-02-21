@@ -14,7 +14,12 @@ import { getDictionary } from "@/dictionaries";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { localePath, t, formatCount } from "@/lib/utils";
 import type { Locale } from "@/types/database";
-import { PdfReader } from "@/components/books/PdfReader";
+import dynamic from "next/dynamic";
+
+const PdfReader = dynamic(
+  () => import("@/components/books/PdfReader").then((m) => m.PdfReader),
+  { ssr: false, loading: () => <div className="text-center py-12">Loading PDF reader...</div> },
+);
 
 interface BookDetailPageProps {
   params: Promise<{ locale: string; slug: string }>;
