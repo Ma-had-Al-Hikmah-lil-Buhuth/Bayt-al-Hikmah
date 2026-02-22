@@ -5,6 +5,12 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { BooksGrid } from "@/components/books/BooksGrid";
 import { SearchBar } from "@/components/books/SearchBar";
 import { FilterSidebar } from "@/components/books/FilterSidebar";
+import {
+  sampleBooks,
+  sampleCategories,
+  searchSampleBooks,
+  getSampleBooksByCategory,
+} from "@/lib/sampleData";
 
 interface BooksPageProps {
   params: Promise<{ locale: string }>;
@@ -92,6 +98,46 @@ export default async function BooksPage({
     }
   } catch {
     // Supabase not configured
+  }
+
+  // Fallback to sample data when Supabase is empty / not configured
+  if (categories.length === 0) {
+    categories = sampleCategories;
+  }
+  if (books.length === 0) {
+    let fallbackBooks = [...sampleBooks];
+
+    if (query) {
+      fallbackBooks = searchSampleBooks(query);
+    }
+    if (category) {
+      fallbackBooks = fallbackBooks.filter(
+        (b) => b.category?.slug === category,
+      );
+    }
+    if (language) {
+      fallbackBooks = fallbackBooks.filter(
+        (b) => b.language_code === language,
+      );
+    }
+    if (era) {
+      fallbackBooks = fallbackBooks.filter(
+        (b) => b.author && sampleBooks.find((sb) => sb.id === b.id),
+      );
+    }
+
+    // Sort
+    if (sort === "views") {
+      fallbackBooks.sort((a, b) => (b.view_count ?? 0) - (a.view_count ?? 0));
+    } else if (sort === "newest") {
+      fallbackBooks.sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      );
+    }
+
+    totalCount = fallbackBooks.length;
+    books = fallbackBooks.slice((page - 1) * limit, page * limit);
   }
 
   const totalPages = Math.ceil(totalCount / limit) || 1;

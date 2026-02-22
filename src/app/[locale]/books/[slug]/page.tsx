@@ -14,12 +14,8 @@ import { getDictionary } from "@/dictionaries";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { localePath, t, formatCount } from "@/lib/utils";
 import type { Locale } from "@/types/database";
-import dynamic from "next/dynamic";
-
-const PdfReader = dynamic(
-  () => import("@/components/books/PdfReader").then((m) => m.PdfReader),
-  { ssr: false, loading: () => <div className="text-center py-12">Loading PDF reader...</div> },
-);
+import { PdfReaderWrapper } from "@/components/books/PdfReaderWrapper";
+import { sampleBooks } from "@/lib/sampleData";
 
 interface BookDetailPageProps {
   params: Promise<{ locale: string; slug: string }>;
@@ -61,10 +57,24 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
 
     relatedBooks = related ?? [];
   } catch {
-    // Supabase not configured — show demo
+    // Supabase not configured — try sample data
   }
 
-  // Demo fallback
+  // Fallback to sample data
+  if (!book) {
+    const sampleBook = sampleBooks.find((b) => b.slug === slug);
+    if (sampleBook) {
+      book = sampleBook;
+      relatedBooks = sampleBooks
+        .filter(
+          (b) =>
+            b.category?.slug === sampleBook.category?.slug &&
+            b.id !== sampleBook.id,
+        )
+        .slice(0, 4);
+    }
+  }
+
   if (!book) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-16 text-center">
@@ -237,7 +247,7 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
           {/* PDF Reader */}
           <div>
             <h2 className="text-lg font-semibold mb-4">{c.readOnline}</h2>
-            <PdfReader
+            <PdfReaderWrapper
               pdfUrl={book.pdf_url}
               bookId={book.id}
               locale={locale}

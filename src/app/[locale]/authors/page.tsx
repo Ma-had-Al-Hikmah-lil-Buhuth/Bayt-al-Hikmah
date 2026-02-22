@@ -4,6 +4,7 @@ import { getDictionary } from "@/dictionaries";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { localePath, t } from "@/lib/utils";
 import type { Locale } from "@/types/database";
+import { sampleAuthors, sampleBooks } from "@/lib/sampleData";
 
 export default async function AuthorsPage({
   params,
@@ -24,16 +25,15 @@ export default async function AuthorsPage({
       .order("era", { ascending: true });
     authors = data ?? [];
   } catch {
-    // Fallback demo authors
-    authors = [
-      { id: "1", name: { en: "Imam Malik ibn Anas", ar: "الإمام مالك بن أنس" }, era: "Classical", death_date_hijri: "179 AH", bio: { en: "Founder of the Maliki school." } },
-      { id: "2", name: { en: "Imam Ahmad ibn Hanbal", ar: "الإمام أحمد بن حنبل" }, era: "Classical", death_date_hijri: "241 AH", bio: { en: "Founder of the Hanbali school." } },
-      { id: "3", name: { en: "Ibn Taymiyyah", ar: "ابن تيمية" }, era: "Medieval", death_date_hijri: "728 AH", bio: { en: "Shaykh al-Islam, prolific scholar." } },
-      { id: "4", name: { en: "Ibn al-Qayyim", ar: "ابن القيم" }, era: "Medieval", death_date_hijri: "751 AH", bio: { en: "Student of Ibn Taymiyyah." } },
-      { id: "5", name: { en: "Shaykh Ibn Baz", ar: "الشيخ ابن باز" }, era: "Contemporary", death_date_hijri: "1420 AH", bio: { en: "Grand Mufti of Saudi Arabia." } },
-      { id: "6", name: { en: "Shaykh al-Uthaymeen", ar: "الشيخ العثيمين" }, era: "Contemporary", death_date_hijri: "1421 AH", bio: { en: "Renowned jurist and teacher." } },
-      { id: "7", name: { en: "Shaykh al-Albani", ar: "الشيخ الألباني" }, era: "Contemporary", death_date_hijri: "1420 AH", bio: { en: "Leading hadith scholar of the 20th century." } },
-    ];
+    // Fallback
+  }
+
+  // Use sample data when Supabase returns empty / is not configured
+  if (authors.length === 0) {
+    authors = sampleAuthors.map((a) => ({
+      ...a,
+      books: [{ count: sampleBooks.filter((b) => b.author_id === a.id).length }],
+    }));
   }
 
   // Group by era

@@ -5,6 +5,7 @@ import { getDictionary } from "@/dictionaries";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { localePath, t, formatCount } from "@/lib/utils";
 import type { Locale } from "@/types/database";
+import { sampleAuthors, sampleBooks } from "@/lib/sampleData";
 
 interface AuthorDetailPageProps {
   params: Promise<{ locale: string; id: string }>;
@@ -43,6 +44,15 @@ export default async function AuthorDetailPage({
     }
   } catch {
     // Supabase not configured
+  }
+
+  // Fallback to sample data
+  if (!author) {
+    const sampleAuthor = sampleAuthors.find((a) => a.id === id);
+    if (sampleAuthor) {
+      author = sampleAuthor;
+      books = sampleBooks.filter((b) => b.author_id === id);
+    }
   }
 
   if (!author) {

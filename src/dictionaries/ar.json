@@ -74,7 +74,22 @@
     "totalBooks": "إجمالي الكتب",
     "totalDownloads": "إجمالي التحميلات",
     "totalViews": "إجمالي المشاهدات",
-    "totalUsers": "إجمالي المستخدمين"
+    "totalUsers": "إجمالي المستخدمين",
+    "manageUsers": "إدارة المستخدمين",
+    "addAuthor": "إضافة مؤلف",
+    "editAuthor": "تعديل المؤلف",
+    "deleteAuthor": "حذف المؤلف",
+    "addCategory": "إضافة قسم",
+    "editCategory": "تعديل القسم",
+    "deleteCategory": "حذف القسم",
+    "editBook": "تعديل الكتاب",
+    "deleteBook": "حذف الكتاب",
+    "changeRole": "تغيير الدور",
+    "confirmDelete": "هل أنت متأكد؟ لا يمكن التراجع عن هذا الإجراء.",
+    "saveChanges": "حفظ التغييرات",
+    "cancel": "إلغاء",
+    "create": "إنشاء",
+    "noResults": "لا توجد نتائج"
   },
   "auth": {
     "signIn": "تسجيل الدخول",

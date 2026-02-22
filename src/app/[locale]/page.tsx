@@ -12,6 +12,11 @@ import { getDictionary } from "@/dictionaries";
 import { localePath, t } from "@/lib/utils";
 import type { Locale } from "@/types/database";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import {
+  getSampleFeaturedBooks,
+  sampleCategories,
+  sampleAuthors,
+} from "@/lib/sampleData";
 
 export default async function HomePage({
   params,
@@ -54,7 +59,22 @@ export default async function HomePage({
       authors: authorsRes.data?.length ?? 0,
     };
   } catch {
-    // Supabase not configured yet — render with empty data
+    // Supabase not configured — use sample data
+  }
+
+  // Fallback to sample data when Supabase is empty / not configured
+  if (featuredBooks.length === 0) {
+    featuredBooks = getSampleFeaturedBooks();
+  }
+  if (categories.length === 0) {
+    categories = sampleCategories;
+  }
+  if (stats.authors === 0) {
+    stats = {
+      books: 5000,
+      downloads: 100000,
+      authors: sampleAuthors.length,
+    };
   }
 
   return (
@@ -119,24 +139,7 @@ export default async function HomePage({
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {(categories.length > 0
-            ? categories
-            : [
-                { slug: "aqeedah", name: { en: "Aqeedah", ar: "عقيدة" } },
-                { slug: "fiqh", name: { en: "Fiqh", ar: "فقه" } },
-                { slug: "hadith", name: { en: "Hadith", ar: "حديث" } },
-                { slug: "tafsir", name: { en: "Tafsir", ar: "تفسير" } },
-                { slug: "seerah", name: { en: "Seerah", ar: "سيرة" } },
-                { slug: "manhaj", name: { en: "Manhaj", ar: "منهج" } },
-                { slug: "fatawa", name: { en: "Fatawa", ar: "فتاوى" } },
-                { slug: "tazkiyah", name: { en: "Tazkiyah", ar: "تزكية" } },
-                { slug: "history", name: { en: "History", ar: "تاريخ" } },
-                {
-                  slug: "arabic-language",
-                  name: { en: "Arabic Language", ar: "اللغة العربية" },
-                },
-              ]
-          ).map((cat: any) => (
+          {categories.map((cat: any) => (
             <Link
               key={cat.slug}
               href={localePath(locale, `/categories/${cat.slug}`)}
@@ -203,9 +206,6 @@ export default async function HomePage({
             <div className="text-center py-16 text-[var(--color-text-muted)]">
               <BookOpen className="mx-auto h-16 w-16 mb-4 opacity-30" />
               <p className="text-lg">{c.noResults}</p>
-              <p className="text-sm mt-2">
-                Connect your Supabase database to see books here.
-              </p>
             </div>
           )}
         </div>

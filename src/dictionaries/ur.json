@@ -74,7 +74,22 @@
     "totalBooks": "کل کتابیں",
     "totalDownloads": "کل ڈاؤن لوڈز",
     "totalViews": "کل مشاہدات",
-    "totalUsers": "کل صارفین"
+    "totalUsers": "کل صارفین",
+    "manageUsers": "صارفین کا انتظام",
+    "addAuthor": "مصنف شامل کریں",
+    "editAuthor": "مصنف میں ترمیم کریں",
+    "deleteAuthor": "مصنف حذف کریں",
+    "addCategory": "زمرہ شامل کریں",
+    "editCategory": "زمرے میں ترمیم کریں",
+    "deleteCategory": "زمرہ حذف کریں",
+    "editBook": "کتاب میں ترمیم کریں",
+    "deleteBook": "کتاب حذف کریں",
+    "changeRole": "کردار تبدیل کریں",
+    "confirmDelete": "کیا آپ کو یقین ہے؟ یہ عمل واپس نہیں ہو سکتا۔",
+    "saveChanges": "تبدیلیاں محفوظ کریں",
+    "cancel": "منسوخ",
+    "create": "بنائیں",
+    "noResults": "کوئی نتائج نہیں ملے"
   },
   "auth": {
     "signIn": "سائن ان",

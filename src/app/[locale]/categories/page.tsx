@@ -4,6 +4,7 @@ import { getDictionary } from "@/dictionaries";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { localePath, t } from "@/lib/utils";
 import type { Locale } from "@/types/database";
+import { sampleCategories, sampleBooks } from "@/lib/sampleData";
 
 export default async function CategoriesPage({
   params,
@@ -25,18 +26,14 @@ export default async function CategoriesPage({
     categories = data ?? [];
   } catch {
     // Fallback
-    categories = [
-      { slug: "aqeedah", name: { en: "Aqeedah", ar: "عقيدة" }, description: { en: "Islamic Creed & Theology" } },
-      { slug: "manhaj", name: { en: "Manhaj", ar: "منهج" }, description: { en: "Methodology of the Salaf" } },
-      { slug: "fiqh", name: { en: "Fiqh", ar: "فقه" }, description: { en: "Islamic Jurisprudence" } },
-      { slug: "hadith", name: { en: "Hadith", ar: "حديث" }, description: { en: "Prophetic Traditions" } },
-      { slug: "tafsir", name: { en: "Tafsir", ar: "تفسير" }, description: { en: "Quranic Exegesis" } },
-      { slug: "seerah", name: { en: "Seerah", ar: "سيرة" }, description: { en: "Prophetic Biography" } },
-      { slug: "arabic-language", name: { en: "Arabic Language", ar: "اللغة العربية" }, description: { en: "Grammar, Morphology & Rhetoric" } },
-      { slug: "history", name: { en: "History", ar: "تاريخ" }, description: { en: "Islamic History & Civilisation" } },
-      { slug: "fatawa", name: { en: "Fatawa", ar: "فتاوى" }, description: { en: "Scholarly Rulings & Verdicts" } },
-      { slug: "tazkiyah", name: { en: "Tazkiyah", ar: "تزكية" }, description: { en: "Purification of the Soul" } },
-    ];
+  }
+
+  // Use sample data when Supabase returns empty / is not configured
+  if (categories.length === 0) {
+    categories = sampleCategories.map((cat) => ({
+      ...cat,
+      books: [{ count: sampleBooks.filter((b) => b.category?.slug === cat.slug).length }],
+    }));
   }
 
   return (
