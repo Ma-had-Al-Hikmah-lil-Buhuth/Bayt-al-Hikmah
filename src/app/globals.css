@@ -1,0 +1,106 @@
+@import "tailwindcss";
+
+/* ─── Custom properties ─────────────────────────────────────────────────── */
+:root {
+  --color-primary: #0f766e;
+  --color-primary-light: #14b8a6;
+  --color-primary-dark: #0d9488;
+  --color-secondary: #1e3a5f;
+  --color-accent: #d4a843;
+  --color-bg: #fafaf9;
+  --color-surface: #ffffff;
+  --color-text: #1c1917;
+  --color-text-muted: #78716c;
+  --color-border: #e7e5e4;
+  --font-heading: "Inter", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-arabic: "Amiri", "Noto Naskh Arabic", serif;
+}
+
+.dark {
+  --color-bg: #0c0a09;
+  --color-surface: #1c1917;
+  --color-text: #fafaf9;
+  --color-text-muted: #a8a29e;
+  --color-border: #292524;
+}
+
+/* ─── Base ───────────────────────────────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+}
+
+/* ─── RTL adjustments ────────────────────────────────────────────────────── */
+[dir="rtl"] body {
+  font-family: var(--font-arabic), var(--font-body);
+}
+
+[dir="rtl"] .flip-rtl {
+  transform: scaleX(-1);
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-text-muted);
+  border-radius: 4px;
+}
+
+/* ─── PDF Viewer full-screen ─────────────────────────────────────────────── */
+.pdf-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: var(--color-bg);
+  overflow-y: auto;
+}
+
+/* ─── Animated gradient for hero ─────────────────────────────────────────── */
+@keyframes gradient-shift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 8s ease infinite;
+}
+
+/* ─── Book card hover ────────────────────────────────────────────────────── */
+.book-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.book-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+/* ─── Category card ──────────────────────────────────────────────────────── */
+.category-card {
+  transition: all 0.2s ease;
+}
+
+.category-card:hover {
+  border-color: var(--color-primary);
+  background-color: color-mix(in srgb, var(--color-primary) 5%, transparent);
+}
