@@ -1,21 +1,22 @@
-import { notFound } from "next/navigation";
-import Image from "next/image";
-import Link from "next/link";
 import {
+	ArrowLeft,
 	BookOpen,
+	Calendar,
 	Download,
 	Eye,
-	ArrowLeft,
-	Calendar,
 	Globe,
 	Tag,
 } from "lucide-react";
-import { getDictionary } from "@/dictionaries";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { localePath, t, formatCount } from "@/lib/utils";
-import type { Locale } from "@/types/database";
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { LanguageBadge } from "@/components/books/LanguageBadge";
 import { PdfReaderWrapper } from "@/components/books/PdfReaderWrapper";
+import { getDictionary } from "@/dictionaries";
 import { sampleBooks } from "@/lib/sampleData";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { formatCount, localePath, t } from "@/lib/utils";
+import type { Locale } from "@/types/database";
 
 interface BookDetailPageProps {
 	params: Promise<{ locale: string; slug: string }>;
