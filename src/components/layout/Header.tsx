@@ -2,7 +2,7 @@
 
 import { BookOpen, Globe, LogIn, Menu, Search, X } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn, localePath } from "@/lib/utils";
 import { LOCALE_NAMES, LOCALES, type Locale } from "@/types/database";
 
@@ -15,6 +15,7 @@ interface HeaderProps {
 export function Header({ locale, dict }: HeaderProps) {
 	const [mobileOpen, setMobileOpen] = useState(false);
 	const [langOpen, setLangOpen] = useState(false);
+	const langRef = useRef<HTMLDivElement>(null); // reference to the language dropdown
 	const c = dict.common;
 
 	const navLinks = [
@@ -23,6 +24,29 @@ export function Header({ locale, dict }: HeaderProps) {
 		{ href: localePath(locale, "/categories"), label: c.categories },
 		{ href: localePath(locale, "/authors"), label: c.authors },
 	];
+
+	useEffect(() => {
+		function handleClickOutside(event: MouseEvent) {
+			if (
+				langRef.current &&
+				!langRef.current.contains(event.target as Node)
+			) {
+				setLangOpen(false);
+			}
+		}
+
+		function handleEsc(event: KeyboardEvent) {
+			if (event.key === "Escape") setLangOpen(false);
+		}
+
+		document.addEventListener("mousedown", handleClickOutside);
+		document.addEventListener("keydown", handleEsc);
+
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside);
+			document.removeEventListener("keydown", handleEsc);
+		};
+	}, []);
 
 	return (
 		<header className="sticky top-0 z-40 border-b border-[var(--color-border)] bg-[var(--color-surface)]/80 backdrop-blur-md">
@@ -61,7 +85,7 @@ export function Header({ locale, dict }: HeaderProps) {
 					</Link>
 
 					{/* Language switcher */}
-					<div className="relative">
+					<div className="relative" ref={langRef}>
 						<button
 							onClick={() => setLangOpen(!langOpen)}
 							className="flex items-center gap-1 p-2 rounded-lg hover:bg-[var(--color-border)] transition-colors text-sm"
