@@ -1,16 +1,16 @@
 import { Suspense } from "react";
-import { getDictionary } from "@/dictionaries";
-import type { Locale } from "@/types/database";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { BooksGrid } from "@/components/books/BooksGrid";
-import { SearchBar } from "@/components/books/SearchBar";
 import { FilterSidebar } from "@/components/books/FilterSidebar";
+import { SearchBar } from "@/components/books/SearchBar";
+import { getDictionary } from "@/dictionaries";
 import {
+	getSampleBooksByCategory,
 	sampleBooks,
 	sampleCategories,
 	searchSampleBooks,
-	getSampleBooksByCategory,
 } from "@/lib/sampleData";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+import type { Locale } from "@/types/database";
 
 interface BooksPageProps {
 	params: Promise<{ locale: string }>;
