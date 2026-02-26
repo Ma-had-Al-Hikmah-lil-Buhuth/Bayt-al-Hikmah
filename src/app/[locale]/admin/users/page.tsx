@@ -4,32 +4,28 @@ import { ManageUsersClient } from "@/components/admin/ManageUsersClient";
 import type { Locale } from "@/types/database";
 
 export default async function ManageUsersPage({
-  params,
+	params,
 }: {
-  params: Promise<{ locale: string }>;
+	params: Promise<{ locale: string }>;
 }) {
-  const { locale: rawLocale } = await params;
-  const locale = rawLocale as Locale;
-  const dict = await getDictionary(locale);
+	const { locale: rawLocale } = await params;
+	const locale = rawLocale as Locale;
+	const dict = await getDictionary(locale);
 
-  let users: any[] = [];
+	let users: any[] = [];
 
-  try {
-    const supabase = await createServerSupabaseClient();
-    const { data } = await supabase
-      .from("profiles")
-      .select("*")
-      .order("created_at", { ascending: false });
-    users = data ?? [];
-  } catch {
-    // Supabase not configured
-  }
+	try {
+		const supabase = await createServerSupabaseClient();
+		const { data } = await supabase
+			.from("profiles")
+			.select("*")
+			.order("created_at", { ascending: false });
+		users = data ?? [];
+	} catch {
+		// Supabase not configured
+	}
 
-  return (
-    <ManageUsersClient
-      locale={locale}
-      dict={dict}
-      initialUsers={users}
-    />
-  );
+	return (
+		<ManageUsersClient locale={locale} dict={dict} initialUsers={users} />
+	);
 }
