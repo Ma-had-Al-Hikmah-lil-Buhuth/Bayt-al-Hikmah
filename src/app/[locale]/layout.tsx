@@ -1,7 +1,7 @@
+import { Footer } from "@/components/layout/Footer";
+import { Header } from "@/components/layout/Header";
 import { getDictionary } from "@/dictionaries";
 import { LOCALES, type Locale } from "@/types/database";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
 
 export function generateStaticParams() {
 	return LOCALES.map((locale) => ({ locale }));

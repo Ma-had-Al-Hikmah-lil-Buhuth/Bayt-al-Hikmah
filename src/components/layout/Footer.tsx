@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { BookOpen } from "lucide-react";
+import Link from "next/link";
 import { localePath } from "@/lib/utils";
 import type { Locale } from "@/types/database";
 

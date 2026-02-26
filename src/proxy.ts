@@ -1,11 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
-import { LOCALES, LOCALE_DIRECTION, type Locale } from "@/types/database";
+import { type NextRequest, NextResponse } from "next/server";
+import { LOCALE_DIRECTION, LOCALES, type Locale } from "@/types/database";
 
 const PUBLIC_FILE = /\.(.*)$/;
 const DEFAULT_LOCALE: Locale = "en";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
 	const { pathname } = request.nextUrl;
 
 	// Skip public files and API routes
@@ -19,10 +19,10 @@ export async function middleware(request: NextRequest) {
 	const hasLocale = LOCALES.includes(maybeLocale);
 
 	if (!hasLocale) {
-		// Redirect to default locale
 		const locale =
 			(request.cookies.get("NEXT_LOCALE")?.value as Locale) ||
 			DEFAULT_LOCALE;
+
 		const url = request.nextUrl.clone();
 		url.pathname = `/${locale}${pathname}`;
 		return NextResponse.redirect(url);
@@ -45,7 +45,9 @@ export async function middleware(request: NextRequest) {
 					cookiesToSet.forEach(({ name, value }) =>
 						request.cookies.set(name, value)
 					);
+
 					response = NextResponse.next({ request });
+
 					cookiesToSet.forEach(({ name, value, options }) =>
 						response.cookies.set(name, value, options)
 					);
