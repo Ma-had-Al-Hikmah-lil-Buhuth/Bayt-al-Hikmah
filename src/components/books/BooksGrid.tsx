@@ -1,13 +1,14 @@
-import Link from "next/link";
-import Image from "next/image";
 import {
 	BookOpen,
-	Eye,
-	Download,
 	ChevronLeft,
 	ChevronRight,
+	Download,
+	Eye,
 } from "lucide-react";
-import { localePath, t, formatCount } from "@/lib/utils";
+import Image from "next/image";
+import Link from "next/link";
+import { LanguageBadge } from "@/components/books/LanguageBadge";
+import { formatCount, localePath, t } from "@/lib/utils";
 import type { Locale } from "@/types/database";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -83,13 +84,10 @@ export function BooksGrid({
 										<BookOpen className="h-12 w-12 text-white/40" />
 									</div>
 								)}
-
-								{/* Badge */}
-								{book.language_code && (
-									<span className="absolute top-2 end-2 rounded-md bg-black/60 px-2 py-0.5 text-xs text-white uppercase">
-										{book.language_code}
-									</span>
-								)}
+								{/* Language Badge */}
+								<LanguageBadge
+									language_code={book.language_code}
+								/>
 							</div>
 
 							{/* Info */}

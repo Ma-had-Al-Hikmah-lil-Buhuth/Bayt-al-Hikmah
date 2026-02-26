@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import type { MultiLang, Locale } from "@/types/database";
+import type { Locale, MultiLang } from "@/types/database";
 
 /** Merge Tailwind classes safely */
 export function cn(...inputs: ClassValue[]) {
