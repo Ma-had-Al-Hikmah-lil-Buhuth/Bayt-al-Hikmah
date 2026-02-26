@@ -1,10 +1,10 @@
 "use client";
 
+import { BookOpen, Globe, LogIn, Menu, Search, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { BookOpen, Menu, X, Search, Globe, LogIn } from "lucide-react";
 import { cn, localePath } from "@/lib/utils";
-import { LOCALES, LOCALE_NAMES, type Locale } from "@/types/database";
+import { LOCALE_NAMES, LOCALES, type Locale } from "@/types/database";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface HeaderProps {
@@ -93,13 +93,13 @@ export function Header({ locale, dict }: HeaderProps) {
 					</div>
 
 					{/* Login */}
-					<Link
-						href={localePath(locale, "/auth/login")}
-						className="hidden sm:flex items-center gap-1 rounded-lg bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-white hover:opacity-90 transition-opacity"
-					>
-						<LogIn className="h-4 w-4" />
-						{c.login}
-					</Link>
+					{/* <Link */}
+					{/* 	href={localePath(locale, "/auth/login")} */}
+					{/* 	className="hidden sm:flex items-center gap-1 rounded-lg bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-white hover:opacity-90 transition-opacity" */}
+					{/* > */}
+					{/* 	<LogIn className="h-4 w-4" /> */}
+					{/* 	{c.login} */}
+					{/* </Link> */}
 
 					{/* Mobile toggle */}
 					<button
