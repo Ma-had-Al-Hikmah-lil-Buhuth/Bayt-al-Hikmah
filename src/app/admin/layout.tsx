@@ -57,15 +57,18 @@ export default async function AdminLayout({
 	];
 
 	return (
-		<div className="flex min-h-[calc(100vh-4rem)]">
-			<AdminSidebarClient
-				navItems={navItems}
-				backLabel={dict.common.backToHome || "Back to Site"}
-				backHref={localePath("/")}
-			/>
-			<div className="flex-1 min-w-0 bg-[var(--color-bg)]">
-				{children}
+		<>
+			<style>{`footer { display: none !important; }`}</style>
+			<div className="flex min-h-[calc(100vh-4rem)]">
+				<AdminSidebarClient
+					navItems={navItems}
+					backLabel={dict.common.backToHome || "Back to Site"}
+					backHref={localePath("/")}
+				/>
+				<div className="flex-1 min-w-0 bg-[var(--color-bg)]">
+					{children}
+				</div>
 			</div>
-		</div>
+		</>
 	);
 }
