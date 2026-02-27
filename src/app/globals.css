@@ -112,19 +112,12 @@ body {
 	transform: scaleX(-1);
 }
 
-/* ─── Scrollbar ──────────────────────────────────────────────────────────── */
-::-webkit-scrollbar {
-	width: 8px;
-	height: 8px;
+/* ─── Hide all scrollbars (scroll still works) ──────────────────────────── */
+* {
+	scrollbar-width: none; /* Firefox */
 }
-
-::-webkit-scrollbar-track {
-	background: var(--color-bg);
-}
-
-::-webkit-scrollbar-thumb {
-	background: var(--color-text-muted);
-	border-radius: 4px;
+*::-webkit-scrollbar {
+	display: none; /* Chrome, Safari, Edge */
 }
 
 /* ─── PDF Viewer full-screen ─────────────────────────────────────────────── */
