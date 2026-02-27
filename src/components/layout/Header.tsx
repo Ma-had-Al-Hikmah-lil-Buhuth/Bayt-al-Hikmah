@@ -1,9 +1,11 @@
 "use client";
 
-import { BookOpen, LogIn, Menu, Search, X } from "lucide-react";
+import { BookOpen, LogOut, Menu, Search, Shield, X } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
-import { cn, localePath } from "@/lib/utils";
+import { useCallback, useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { localePath } from "@/lib/utils";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface HeaderProps {
@@ -12,7 +14,56 @@ interface HeaderProps {
 
 export function Header({ dict }: HeaderProps) {
 	const [mobileOpen, setMobileOpen] = useState(false);
+	const [isLoggedIn, setIsLoggedIn] = useState(false);
+	const [isAdmin, setIsAdmin] = useState(false);
+	const router = useRouter();
+	const pathname = usePathname();
+	const isOnAdmin = pathname.startsWith("/admin");
 	const c = dict.common;
+
+	const checkAuth = useCallback(async () => {
+		try {
+			const res = await fetch("/api/auth?action=me");
+			if (res.ok) {
+				const data = await res.json();
+				setIsLoggedIn(true);
+				setIsAdmin(!!data.user?.isAdmin);
+			} else {
+				setIsLoggedIn(false);
+				setIsAdmin(false);
+			}
+		} catch {
+			setIsLoggedIn(false);
+			setIsAdmin(false);
+		}
+	}, []);
+
+	useEffect(() => {
+		checkAuth();
+
+		// Listen for auth state changes (e.g. after logout)
+		const onAuthChange = () => checkAuth();
+		window.addEventListener("auth-change", onAuthChange);
+		return () => window.removeEventListener("auth-change", onAuthChange);
+	}, [checkAuth]);
+
+	const handleLogout = async () => {
+		try {
+			const res = await fetch("/api/auth?action=logout", { method: "POST" });
+			if (res.ok) {
+				setIsLoggedIn(false);
+				setIsAdmin(false);
+				toast.success("Logged out successfully!");
+				window.dispatchEvent(new Event("auth-change"));
+				router.push("/");
+				router.refresh();
+			} else {
+				toast.error("Failed to logout.");
+			}
+		} catch {
+			toast.error("Failed to logout.");
+		}
+	};
 
 	const navLinks = [
 		{ href: localePath("/"), label: c.home },
@@ -20,6 +71,9 @@ export function Header({ dict }: HeaderProps) {
 		{ href: localePath("/categories"), label: c.categories },
 		{ href: localePath("/authors"), label: c.authors },
 	];
+
+	// Hide header entirely in admin panel
+	if (isOnAdmin) return null;
 
 	return (
 		<header className="sticky top-0 z-40 border-b border-[var(--color-border)] bg-[var(--color-surface)]/80 backdrop-blur-md">
@@ -33,7 +87,7 @@ export function Header({ dict }: HeaderProps) {
 					<span className="hidden sm:inline">{c.siteName}</span>
 				</Link>
 
-				{/* ── Desktop nav ───────────────────────────────────────── */}
+				{/* ── Desktop nav ──────────────────────────────────────── */}
 				<nav className="hidden md:flex items-center gap-6">
 					{navLinks.map((link) => (
 						<Link
@@ -47,7 +101,7 @@ export function Header({ dict }: HeaderProps) {
 				</nav>
 
 				{/* ── Actions ───────────────────────────────────────────── */}
-				<div className="flex items-center gap-3">
+				<div className="flex items-center gap-2">
 					{/* Search */}
 					<Link
 						href={localePath("/books?focus=search")}
@@ -56,6 +110,32 @@ export function Header({ dict }: HeaderProps) {
 					>
 						<Search className="h-5 w-5" />
 					</Link>
+
+					{/* Admin */}
+					{isAdmin && (
+						<Link
+							href={localePath("/admin")}
+							className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10 transition-colors"
+							aria-label="Admin Panel"
+							title="Admin Panel"
+						>
+							<Shield className="h-4.5 w-4.5" />
+							<span>Admin</span>
+						</Link>
+					)}
+
+					{/* Logout */}
+					{isLoggedIn && (
+						<button
+							onClick={handleLogout}
+							className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-white bg-red-500 hover:bg-red-600 transition-colors cursor-pointer"
+							aria-label="Logout"
+							title="Logout"
+						>
+							<LogOut className="h-4.5 w-4.5" />
+							<span>Logout</span>
+						</button>
+					)}
 
 					{/* Mobile toggle */}
 					<button
@@ -85,13 +165,36 @@ export function Header({ dict }: HeaderProps) {
 							{link.label}
 						</Link>
 					))}
-					<Link
-						href={localePath("/auth/login")}
-						onClick={() => setMobileOpen(false)}
-						className="block text-sm font-medium text-[var(--color-primary)]"
-					>
-						{c.login}
-					</Link>
+					{isAdmin && (
+						<Link
+							href={localePath("/admin")}
+							onClick={() => setMobileOpen(false)}
+							className="flex items-center gap-2 text-sm font-medium text-[var(--color-primary)]"
+						>
+							<Shield className="h-4 w-4" />
+							Admin
+						</Link>
+					)}
+					{isLoggedIn ? (
+						<button
+							onClick={() => {
+								setMobileOpen(false);
+								handleLogout();
+							}}
+							className="flex items-center gap-2 text-sm font-medium text-red-500 cursor-pointer"
+						>
+							<LogOut className="h-4 w-4" />
+							Logout
+						</button>
+					) : (
+						<Link
+							href={localePath("/auth/login")}
+							onClick={() => setMobileOpen(false)}
+							className="block text-sm font-medium text-[var(--color-primary)]"
+						>
+							{c.login}
+						</Link>
+					)}
 				</nav>
 			)}
 		</header>

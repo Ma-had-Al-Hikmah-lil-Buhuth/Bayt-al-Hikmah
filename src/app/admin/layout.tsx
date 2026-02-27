@@ -59,7 +59,7 @@ export default async function AdminLayout({
 	return (
 		<>
 			<style>{`footer { display: none !important; }`}</style>
-			<div className="flex min-h-[calc(100vh-4rem)]">
+			<div className="flex min-h-screen">
 				<AdminSidebarClient
 					navItems={navItems}
 					backLabel={dict.common.backToHome || "Back to Site"}
