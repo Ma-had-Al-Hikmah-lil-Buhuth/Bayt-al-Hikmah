@@ -162,26 +162,21 @@ VALUES
 -- ============================================================================
 -- 4. BOOKS
 -- ============================================================================
-CREATE TYPE public.copyright_status AS ENUM (
-    'public_domain',
-    'permission_granted',
-    'restricted'
-);
-
 CREATE TABLE public.books (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     title JSONB NOT NULL DEFAULT '{}',  -- {"en":"…","ar":"…"}
     slug VARCHAR(200) NOT NULL UNIQUE,
     author_id UUID NOT NULL REFERENCES public.authors(id) ON DELETE RESTRICT,
+    translator_id UUID REFERENCES public.authors(id) ON DELETE SET NULL,
     category_id UUID NOT NULL REFERENCES public.categories(id) ON DELETE RESTRICT,
     language_code VARCHAR(5) NOT NULL REFERENCES public.languages(code),
+    translation_of_id UUID REFERENCES public.books(id) ON DELETE SET NULL,
     description JSONB DEFAULT '{}',
     pdf_url TEXT NOT NULL,
     cover_image_url TEXT,
     page_count INT,
     is_downloadable BOOLEAN NOT NULL DEFAULT TRUE,
     is_featured BOOLEAN NOT NULL DEFAULT false,
-    copyright public.copyright_status NOT NULL DEFAULT 'public_domain',
     view_count BIGINT NOT NULL DEFAULT 0,
     download_count BIGINT NOT NULL DEFAULT 0,
     published_at TIMESTAMPTZ,
@@ -191,11 +186,15 @@ CREATE TABLE public.books (
 
 CREATE INDEX idx_books_author ON public.books(author_id);
 
+CREATE INDEX idx_books_translator ON public.books(translator_id);
+
 CREATE INDEX idx_books_category ON public.books(category_id);
 
 CREATE INDEX idx_books_language ON public.books(language_code);
 
 CREATE INDEX idx_books_slug ON public.books(slug);
+
+CREATE INDEX idx_books_translation_of ON public.books(translation_of_id);
 
 CREATE INDEX idx_books_featured ON public.books(is_featured)
 WHERE

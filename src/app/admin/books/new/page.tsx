@@ -6,16 +6,14 @@ export default async function NewBookPage() {
 	const dict = await getDictionary();
 
 	let categories: any[] = [];
-	let authors: any[] = [];
 
 	try {
 		const supabase = await createServerSupabaseClient();
-		const [catRes, authRes] = await Promise.all([
-			supabase.from("categories").select("*").order("sort_order"),
-			supabase.from("authors").select("*").order("name"),
-		]);
-		categories = catRes.data ?? [];
-		authors = authRes.data ?? [];
+		const { data } = await supabase
+			.from("categories")
+			.select("*")
+			.order("sort_order");
+		categories = data ?? [];
 	} catch {
 		// Supabase not configured
 	}
@@ -26,7 +24,7 @@ export default async function NewBookPage() {
 			<UploadBookForm
 				dict={dict}
 				categories={categories}
-				authors={authors}
+				authors={[]}
 			/>
 		</div>
 	);

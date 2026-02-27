@@ -1,56 +1,44 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createAdminSupabaseClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/auth";
 import { slugify } from "@/lib/utils";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 /** POST /api/admin/books — upload a new book (admin only) */
-export async function POST(request: NextRequest) {
+export const POST = async (request: NextRequest) => {
 	try {
-		const supabase = await createAdminSupabaseClient();
-
-		// Verify admin
-		const {
-			data: { user },
-		} = await supabase.auth.getUser();
-
-		if (!user) {
-			return NextResponse.json(
-				{ error: "Unauthorized" },
-				{ status: 401 }
-			);
-		}
-
-		const { data: profile } = await supabase
-			.from("profiles")
-			.select("role")
-			.eq("id", user.id)
-			.single();
-
-		if (profile?.role !== "admin") {
+		const user = await getCurrentUser();
+		if (!user || !user.isAdmin) {
 			return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 		}
 
+		const supabase = await createAdminSupabaseClient();
 		const formData = await request.formData();
 
-		// Build title JSONB
-		const title: Record<string, string> = {};
-		for (const lang of ["en", "ar", "bn", "ur"]) {
-			const val = formData.get(`title_${lang}`) as string | null;
-			if (val?.trim()) title[lang] = val.trim();
-		}
+		// Build title JSONB — single title stored under the selected language key
+		const titleText = (formData.get("title") as string)?.trim();
+		const languageCode = (formData.get("language_code") as string) || "en";
 
-		if (!title.en) {
+		if (!titleText) {
 			return NextResponse.json(
-				{ error: "English title is required" },
+				{ error: "Title is required" },
 				{ status: 400 }
 			);
 		}
 
+		const title: Record<string, string> = { [languageCode]: titleText };
+
 		const authorId = formData.get("author_id") as string;
 		const categoryId = formData.get("category_id") as string;
-		const languageCode = formData.get("language_code") as string;
 		const descriptionEn = formData.get("description_en") as string;
 		const isDownloadable = formData.has("is_downloadable");
 		const isFeatured = formData.has("is_featured");
+
+		// Optional new fields
+		const translatorId = formData.get("translator_id") as string | null;
+		const translationOfId = formData.get("translation_of_id") as string | null;
+		const tagIdsRaw = formData.get("tag_ids") as string | null;
 
 		// Upload PDF
 		const pdfFile = formData.get("pdf") as File | null;
@@ -61,7 +49,7 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		const slug = slugify(title.en);
+		const slug = slugify(titleText);
 		const pdfPath = `books/${slug}/${pdfFile.name}`;
 		const pdfBuffer = Buffer.from(await pdfFile.arrayBuffer());
 
@@ -100,25 +88,47 @@ export async function POST(request: NextRequest) {
 			}
 		}
 
+		// Build insert payload
+		const insertPayload: Record<string, any> = {
+			title,
+			slug,
+			author_id: authorId,
+			category_id: categoryId,
+			language_code: languageCode,
+			description: descriptionEn ? { en: descriptionEn } : {},
+			pdf_url: pdfUrl,
+			cover_image_url: coverUrl,
+			is_downloadable: isDownloadable,
+			is_featured: isFeatured,
+		};
+
+		if (translatorId) insertPayload.translator_id = translatorId;
+		if (translationOfId) insertPayload.translation_of_id = translationOfId;
+
 		// Insert book record
 		const { data: book, error: insertError } = await supabase
 			.from("books")
-			.insert({
-				title,
-				slug,
-				author_id: authorId,
-				category_id: categoryId,
-				language_code: languageCode,
-				description: descriptionEn ? { en: descriptionEn } : {},
-				pdf_url: pdfUrl,
-				cover_image_url: coverUrl,
-				is_downloadable: isDownloadable,
-				is_featured: isFeatured,
-			})
+			.insert(insertPayload)
 			.select()
 			.single();
 
 		if (insertError) throw insertError;
+
+		// Insert tags into book_tags junction table
+		if (tagIdsRaw) {
+			try {
+				const tagIds: string[] = JSON.parse(tagIdsRaw);
+				if (tagIds.length > 0) {
+					const bookTagRows = tagIds.map((tagId) => ({
+						book_id: book.id,
+						tag_id: tagId,
+					}));
+					await supabase.from("book_tags").insert(bookTagRows);
+				}
+			} catch {
+				// tag insertion is non-critical
+			}
+		}
 
 		return NextResponse.json({ data: book }, { status: 201 });
 	} catch (err: any) {
@@ -127,4 +137,4 @@ export async function POST(request: NextRequest) {
 			{ status: 500 }
 		);
 	}
-}
+};

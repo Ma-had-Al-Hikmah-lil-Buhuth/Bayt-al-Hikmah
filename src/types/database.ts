@@ -58,8 +58,10 @@ export interface Book {
 	title: MultiLang;
 	slug: string;
 	author_id: string;
+	translator_id: string | null;
 	category_id: string;
 	language_code: string;
+	translation_of_id: string | null;
 	description: MultiLang;
 	pdf_url: string;
 	cover_image_url: string | null;
@@ -76,7 +78,19 @@ export interface Book {
 /** Book with joined author & category rows (common query shape) */
 export interface BookWithRelations extends Book {
 	author: Author;
+	translator?: Author | null;
 	category: Category;
+	tags?: Tag[];
+}
+
+/** Book with translations in other languages */
+export interface BookWithTranslations extends BookWithRelations {
+	translations: {
+		id: string;
+		title: MultiLang;
+		slug: string;
+		language_code: string;
+	}[];
 }
 
 export interface Tag {
