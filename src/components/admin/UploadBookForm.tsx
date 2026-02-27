@@ -286,6 +286,126 @@ const CustomDropdown = ({
 	);
 };
 
+// ─── Searchable Category ────────────────────────────────────────────────────
+
+interface SearchableCategoryProps {
+	label: string;
+	categories: { id: string; name: string; description?: string }[];
+	value: string;
+	onChange: (val: string) => void;
+	placeholder?: string;
+	required?: boolean;
+	name?: string;
+}
+
+const SearchableCategory = ({
+	label,
+	categories,
+	value,
+	onChange,
+	placeholder = "Search category…",
+	required,
+	name,
+}: SearchableCategoryProps) => {
+	const [query, setQuery] = useState("");
+	const [isOpen, setIsOpen] = useState(false);
+	const wrapperRef = useRef<HTMLDivElement>(null);
+	const inputRef = useRef<HTMLInputElement>(null);
+
+	useEffect(() => {
+		const handleClickOutside = (e: MouseEvent) => {
+			if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+				setIsOpen(false);
+			}
+		};
+		document.addEventListener("mousedown", handleClickOutside);
+		return () => document.removeEventListener("mousedown", handleClickOutside);
+	}, []);
+
+	const filtered = categories.filter(
+		(cat) => cat.name.toLowerCase().includes(query.toLowerCase())
+	);
+
+	const selected = categories.find((c) => c.id === value);
+
+	const handleClear = () => {
+		onChange("");
+		setQuery("");
+		setIsOpen(true);
+		setTimeout(() => inputRef.current?.focus(), 0);
+	};
+
+	return (
+		<div ref={wrapperRef} className="relative">
+			<label className="text-sm font-semibold block mb-1.5">
+				{label} {required && !selected && <span className="text-red-400">*</span>}
+			</label>
+			{name && <input type="hidden" name={name} value={value} />}
+
+			{selected ? (
+				<button
+					type="button"
+					onClick={handleClear}
+					className="w-full flex items-center gap-2 rounded-lg border border-[var(--color-primary)]/30 bg-[var(--color-primary)]/5 px-3 py-2.5 text-left cursor-pointer hover:bg-[var(--color-primary)]/10 transition-colors"
+				>
+					<Tag className="h-4 w-4 text-[var(--color-primary)] shrink-0" />
+					<span className="text-sm font-medium">{selected.name}</span>
+				</button>
+			) : (
+				<>
+					<div className="relative">
+						<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--color-text-muted)]" />
+						<input
+							ref={inputRef}
+							type="text"
+							value={query}
+							onChange={(e) => {
+								setQuery(e.target.value);
+								setIsOpen(true);
+							}}
+							onFocus={() => setIsOpen(true)}
+							placeholder={placeholder}
+							className="w-full rounded-lg border border-[var(--color-border)] pl-9 pr-3 py-2.5 text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none"
+						/>
+					</div>
+					{isOpen && (
+						<div className="absolute z-30 w-full mt-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] shadow-lg max-h-56 overflow-y-auto">
+							{filtered.length === 0 ? (
+								<div className="px-3 py-4 text-sm text-[var(--color-text-muted)] text-center">
+									No categories found
+								</div>
+							) : (
+								filtered.map((cat) => (
+									<button
+										key={cat.id}
+										type="button"
+										onClick={() => {
+											onChange(cat.id);
+											setQuery("");
+											setIsOpen(false);
+										}}
+										className="w-full text-left px-3 py-2.5 text-sm hover:bg-[var(--color-border)] transition-colors flex items-center gap-2 cursor-pointer"
+									>
+										<Tag className="h-3.5 w-3.5 text-[var(--color-text-muted)] shrink-0" />
+										<div className="flex-1 min-w-0">
+											<span className="font-medium">{cat.name}</span>
+											{cat.description && (
+												<span className="text-xs text-[var(--color-text-muted)] ml-2">
+													— {cat.description}
+												</span>
+											)}
+										</div>
+									</button>
+								))
+							)}
+						</div>
+					)}
+				</>
+			)}
+		</div>
+	);
+};
+
 // ─── Tag Input ──────────────────────────────────────────────────────────────
 
 interface TagInputProps {
@@ -652,6 +772,11 @@ export function UploadBookForm({ dict, categories }: UploadBookFormProps) {
 	const isRtl = selectedLanguage === "ar" || selectedLanguage === "ur";
 	const textDir = isRtl ? "rtl" : "ltr";
 
+	const isMushaf = selectedCategory === "mushaf";
+	const isTafseer = selectedCategory === "tafseer";
+	const isTranslation = selectedCategory === "translation-of-the-quran";
+	const noAuthorField = isMushaf || isTranslation;
+
 	const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		setPdfFileName(file ? file.name : "");
@@ -672,17 +797,31 @@ export function UploadBookForm({ dict, categories }: UploadBookFormProps) {
 		setIsSubmitting(true);
 		setError("");
 
-		if (!author) {
-			setError("Please select an author.");
+		if (!isMushaf && !author) {
+			const label = isTranslation
+				? "Please select a translator."
+				: isTafseer
+					? "Please select a mufassir."
+					: "Please select an author.";
+			setError(label);
 			setIsSubmitting(false);
 			return;
 		}
 
 		const formData = new FormData(e.currentTarget);
-		formData.set("author_id", author.id);
+		if (isTranslation && author) {
+			// For Translation of the Qur'an, the primary person is the translator
+			formData.set("translator_id", author.id);
+		} else if (isTafseer && author) {
+			// For Tafseer, the primary person is the mufassir (stored as author)
+			formData.set("author_id", author.id);
+			if (translator) formData.set("translator_id", translator.id);
+		} else if (!isMushaf && author) {
+			formData.set("author_id", author.id);
+			if (translator) formData.set("translator_id", translator.id);
+		}
 		formData.set("language_code", selectedLanguage);
 		formData.set("category_id", selectedCategory);
-		if (translator) formData.set("translator_id", translator.id);
 		if (translationOf) formData.set("translation_of_id", translationOf.id);
 
 		// Send tags as JSON
@@ -764,45 +903,76 @@ export function UploadBookForm({ dict, categories }: UploadBookFormProps) {
 					</div>
 				</Section>
 
-				{/* ── Section 3: Author & Translator ──────────────────── */}
-				<Section icon={UserPen} title="Author & Translator">
+				{/* ── Section 3: Classification ───────────────────────── */}
+				<Section icon={Tag} title="Classification">
 					<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-						<SearchablePerson
-							label="Author"
-							placeholder="Search author by name…"
-							apiUrl="/api/admin/authors/search"
-							value={author}
-							onChange={setAuthor}
+						<SearchableCategory
+							label="Category"
+							name="category_id"
+							categories={categories}
+							value={selectedCategory}
+							onChange={(val) => {
+								setSelectedCategory(val);
+								// Clear author/translator when switching to categories without author
+								if (val === "mushaf" || val === "translation-of-the-quran") {
+									setAuthor(null);
+									setTranslator(null);
+								}
+							}}
+							placeholder="Search category…"
 							required
-							showAddNew
 						/>
-						<SearchablePerson
-							label="Translator (optional)"
-							placeholder="Search translator…"
-							apiUrl="/api/admin/authors/search"
-							value={translator}
-							onChange={setTranslator}
-							showAddNew
-						/>
+						<TagInput tags={tags} onChange={setTags} />
 					</div>
 				</Section>
 
-				{/* ── Section 4: Classification ───────────────────────── */}
-				<Section icon={Tag} title="Classification">
-					<CustomDropdown
-						label="Category"
-						name="category_id"
-						options={categories.map((cat: any) => ({
-							value: cat.id,
-							label: t(cat.name),
-						}))}
-						value={selectedCategory}
-						onChange={setSelectedCategory}
-						placeholder="Select category…"
-						required
-					/>
-					<TagInput tags={tags} onChange={setTags} />
-				</Section>
+				{/* ── Section 4: Author & Translator (hidden for Mushaf) ── */}
+				{!isMushaf && (
+					<Section
+						icon={UserPen}
+						title={
+							isTranslation
+								? "Translator"
+								: isTafseer
+									? "Mufassir & Translator"
+									: "Author & Translator"
+						}
+					>
+						<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+							<SearchablePerson
+								label={
+									isTranslation
+										? "Translator"
+										: isTafseer
+											? "Mufassir"
+											: "Author"
+								}
+								placeholder={
+									isTranslation
+										? "Search translator by name…"
+										: isTafseer
+											? "Search mufassir by name…"
+											: "Search author by name…"
+								}
+								apiUrl="/api/admin/authors/search"
+								value={author}
+								onChange={setAuthor}
+								required
+								showAddNew
+							/>
+							{!isTranslation && (
+								<SearchablePerson
+									label="Translator (optional)"
+									placeholder="Search translator…"
+									apiUrl="/api/admin/authors/search"
+									value={translator}
+									onChange={setTranslator}
+									showAddNew
+								/>
+							)}
+						</div>
+					</Section>
+				)}
 
 				{/* ── Section 5: Translation Link ────────────────────── */}
 				<Section icon={Link2} title="Translation Link">

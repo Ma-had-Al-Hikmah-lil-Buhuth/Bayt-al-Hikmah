@@ -166,7 +166,7 @@ CREATE TABLE public.books (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     title JSONB NOT NULL DEFAULT '{}',  -- {"en":"…","ar":"…"}
     slug VARCHAR(200) NOT NULL UNIQUE,
-    author_id UUID NOT NULL REFERENCES public.authors(id) ON DELETE RESTRICT,
+    author_id UUID REFERENCES public.authors(id) ON DELETE RESTRICT,
     translator_id UUID REFERENCES public.authors(id) ON DELETE SET NULL,
     category_id UUID NOT NULL REFERENCES public.categories(id) ON DELETE RESTRICT,
     language_code VARCHAR(5) NOT NULL REFERENCES public.languages(code),
@@ -339,7 +339,7 @@ SELECT
     )::REAL AS rank
 FROM
     public.books b
-    JOIN public.authors a ON a.id = b.author_id
+    LEFT JOIN public.authors a ON a.id = b.author_id
     JOIN public.categories c ON c.id = b.category_id
 WHERE
     (

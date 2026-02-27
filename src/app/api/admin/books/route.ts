@@ -92,7 +92,6 @@ export const POST = async (request: NextRequest) => {
 		const insertPayload: Record<string, any> = {
 			title,
 			slug,
-			author_id: authorId,
 			category_id: categoryId,
 			language_code: languageCode,
 			description: descriptionEn ? { en: descriptionEn } : {},
@@ -101,6 +100,8 @@ export const POST = async (request: NextRequest) => {
 			is_downloadable: isDownloadable,
 			is_featured: isFeatured,
 		};
+
+		if (authorId) insertPayload.author_id = authorId;
 
 		if (translatorId) insertPayload.translator_id = translatorId;
 		if (translationOfId) insertPayload.translation_of_id = translationOfId;

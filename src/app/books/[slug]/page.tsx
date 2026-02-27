@@ -5,6 +5,7 @@ import {
 	Download,
 	Eye,
 	Globe,
+	Languages,
 	Tag,
 } from "lucide-react";
 import Image from "next/image";
@@ -21,6 +22,15 @@ interface BookDetailPageProps {
 	params: Promise<{ slug: string }>;
 }
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+const LANG_LABELS: Record<string, string> = {
+	ar: "🇸🇦 Arabic",
+	en: "🇬🇧 English",
+	bn: "🇧🇩 Bangla",
+	ur: "🇵🇰 Urdu",
+};
+
 export default async function BookDetailPage({ params }: BookDetailPageProps) {
 	const { slug } = await params;
 	const dict = await getDictionary();
@@ -29,13 +39,14 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
 
 	let book: any = null;
 	let relatedBooks: any[] = [];
+	let translations: any[] = [];
 
 	try {
 		const supabase = await createServerSupabaseClient();
 
 		const { data } = await supabase
 			.from("books")
-			.select("*, author:authors(*), category:categories(*)")
+			.select("*, author:authors(*), category:categories(*), translator:authors!books_translator_id_fkey(*)")
 			.eq("slug", slug)
 			.single();
 
@@ -44,6 +55,17 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
 
 		// Increment view count (fire-and-forget)
 		supabase.rpc("increment_view_count", { book_uuid: book.id }).then();
+
+		// Fetch translations — books that share the same original or are the original
+		const originalId = book.translation_of_id || book.id;
+		const { data: translationData } = await supabase
+			.from("books")
+			.select("id, title, slug, language_code, author:authors(name)")
+			.or(`id.eq.${originalId},translation_of_id.eq.${originalId}`)
+			.neq("id", book.id)
+			.order("language_code");
+
+		translations = translationData ?? [];
 
 		// Fetch related books (same category, different book)
 		const { data: related } = await supabase
@@ -98,6 +120,7 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
 	const authorName = t(book.author?.name);
 	const categoryName = t(book.category?.name);
 	const description = t(book.description);
+	const translatorName = book.translator ? t(book.translator.name) : null;
 
 	return (
 		<div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -212,14 +235,27 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
 				<div className="lg:col-span-2 space-y-8">
 					<div>
 						<h1 className="text-3xl font-bold">{title}</h1>
-						<Link
-							href={localePath(
-								`/authors/${book.author_id}`
-							)}
-							className="mt-2 inline-block text-lg text-[var(--color-primary)] hover:underline"
-						>
-							{authorName}
-						</Link>
+						{authorName && (
+							<Link
+								href={localePath(
+									`/authors/${book.author_id}`
+								)}
+								className="mt-2 inline-block text-lg text-[var(--color-primary)] hover:underline"
+							>
+								{authorName}
+							</Link>
+						)}
+						{translatorName && (
+							<p className="text-sm text-[var(--color-text-muted)] mt-1">
+								Translated by{" "}
+								<Link
+									href={localePath(`/authors/${book.translator_id}`)}
+									className="text-[var(--color-primary)] hover:underline"
+								>
+									{translatorName}
+								</Link>
+							</p>
+						)}
 					</div>
 
 					{/* Description */}
@@ -231,6 +267,30 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
 							<p className="text-[var(--color-text-muted)] leading-relaxed whitespace-pre-line">
 								{description}
 							</p>
+						</div>
+					)}
+
+					{/* Read it in another language */}
+					{translations.length > 0 && (
+						<div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] overflow-hidden">
+							<div className="flex items-center gap-2 px-5 py-3 bg-[var(--color-border)]/30 border-b border-[var(--color-border)]">
+								<Languages className="h-4 w-4 text-[var(--color-primary)]" />
+								<h2 className="text-sm font-semibold">Read it in another language</h2>
+							</div>
+							<div className="p-4 flex flex-wrap gap-3">
+								{translations.map((tr: any) => (
+									<Link
+										key={tr.id}
+										href={localePath(`/books/${tr.slug}`)}
+										className="inline-flex items-center gap-2 rounded-lg border border-[var(--color-border)] px-4 py-2.5 text-sm font-medium hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] transition-colors"
+									>
+										<span>{LANG_LABELS[tr.language_code] || tr.language_code.toUpperCase()}</span>
+										<span className="text-xs text-[var(--color-text-muted)]">
+											{t(tr.title)}
+										</span>
+									</Link>
+								))}
+							</div>
 						</div>
 					)}
 
@@ -280,9 +340,11 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
 									<h3 className="font-semibold text-sm line-clamp-2">
 										{t(rb.title)}
 									</h3>
-									<p className="text-xs text-[var(--color-text-muted)] mt-1">
-										{t(rb.author?.name)}
-									</p>
+									{rb.author?.name && (
+										<p className="text-xs text-[var(--color-text-muted)] mt-1">
+											{t(rb.author.name)}
+										</p>
+									)}
 								</div>
 							</Link>
 						))}

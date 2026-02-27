@@ -1,0 +1,68 @@
+[
+	{
+		"id": "aqeedah",
+		"name": "Aqeedah",
+		"slug": "aqeedah",
+		"description": "Islamic Creed & Theology"
+	},
+	{
+		"id": "arabic-language",
+		"name": "Arabic Language",
+		"slug": "arabic-language",
+		"description": "Arabic Grammar, Morphology & Rhetoric"
+	},
+	{
+		"id": "fiqh",
+		"name": "Fiqh",
+		"slug": "fiqh",
+		"description": "Islamic Jurisprudence"
+	},
+	{
+		"id": "hadith",
+		"name": "Hadith",
+		"slug": "hadith",
+		"description": "Prophetic Traditions & their compilations"
+	},
+	{
+		"id": "history",
+		"name": "History",
+		"slug": "history",
+		"description": "Islamic History & Civilisation"
+	},
+	{
+		"id": "mushaf",
+		"name": "Mushaf",
+		"slug": "mushaf",
+		"description": "Digital copies of the Noble Qur'an"
+	},
+	{
+		"id": "seerah",
+		"name": "Seerah",
+		"slug": "seerah",
+		"description": "Prophetic Biography"
+	},
+	{
+		"id": "tafseer",
+		"name": "Tafseer",
+		"slug": "tafseer",
+		"description": "Qur'anic Exegesis & Commentary"
+	},
+	{
+		"id": "translation-of-the-quran",
+		"name": "Translation of The Qur'an",
+		"slug": "translation-of-the-quran",
+		"description": "Translations of the Noble Qur'an"
+	},
+	{
+		"id": "usool-al-fiqh",
+		"name": "Usool al-Fiqh",
+		"slug": "usool-al-fiqh",
+		"description": "Principles of Islamic Jurisprudence"
+	},
+	{
+		"id": "usool-al-hadith",
+		"name": "Usool al-Hadith",
+		"slug": "usool-al-hadith",
+		"description": "Sciences of Hadith & Narrator Criticism"
+	}
+]

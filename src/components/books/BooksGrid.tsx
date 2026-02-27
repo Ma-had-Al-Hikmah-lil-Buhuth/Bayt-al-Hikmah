@@ -91,9 +91,11 @@ export function BooksGrid({
 								<h3 className="font-semibold text-sm line-clamp-2 leading-snug">
 									{title}
 								</h3>
-								<p className="text-xs text-[var(--color-text-muted)] line-clamp-1">
-									{authorName}
-								</p>
+								{authorName && (
+									<p className="text-xs text-[var(--color-text-muted)] line-clamp-1">
+										{authorName}
+									</p>
+								)}
 								<div className="flex items-center gap-3 text-xs text-[var(--color-text-muted)] pt-1">
 									<span className="flex items-center gap-1">
 										<Eye className="h-3 w-3" />
