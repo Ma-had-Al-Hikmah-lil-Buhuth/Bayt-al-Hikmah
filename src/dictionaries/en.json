@@ -18,7 +18,6 @@
 		"download": "Download",
 		"readOnline": "Read Online",
 		"backToHome": "Back to Home",
-		"copyright": "Public Domain",
 		"allRightsReserved": "All rights reserved"
 	},
 	"home": {
@@ -34,15 +33,11 @@
 		"placeholder": "Search by title, author, or keyword…",
 		"filterByCategory": "Filter by Category",
 		"filterByLanguage": "Filter by Language",
-		"filterByEra": "Filter by Era",
 		"resultsFor": "Results for",
 		"sortBy": "Sort by",
 		"relevance": "Relevance",
 		"mostViewed": "Most Viewed",
-		"newest": "Newest",
-		"classical": "Classical",
-		"medieval": "Medieval",
-		"contemporary": "Contemporary"
+		"newest": "Newest"
 	},
 	"book": {
 		"details": "Book Details",

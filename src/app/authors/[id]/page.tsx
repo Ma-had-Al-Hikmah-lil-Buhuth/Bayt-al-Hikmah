@@ -104,7 +104,6 @@ export default async function AuthorDetailPage({
 					<div>
 						<h1 className="text-3xl font-bold">{name}</h1>
 						<div className="flex items-center gap-4 mt-2 text-sm text-[var(--color-text-muted)]">
-							{author.era && <span>{author.era}</span>}
 							{author.death_date_hijri && (
 								<span className="flex items-center gap-1">
 									<Calendar className="h-4 w-4" />

@@ -16,7 +16,6 @@ interface BooksPageProps {
 		q?: string;
 		category?: string;
 		language?: string;
-		era?: string;
 		page?: string;
 		sort?: string;
 	}>;
@@ -31,7 +30,6 @@ export default async function BooksPage({
 	const query = sp.q ?? "";
 	const category = sp.category ?? "";
 	const language = sp.language ?? "";
-	const era = sp.era ?? "";
 	const page = parseInt(sp.page ?? "1", 10);
 	const sort = sp.sort ?? "relevance";
 	const limit = 20;
@@ -56,7 +54,7 @@ export default async function BooksPage({
 				search_query: query,
 				lang_code: language || null,
 				cat_slug: category || null,
-				author_era: era || null,
+				author_era: null,
 				result_limit: limit,
 				result_offset: (page - 1) * limit,
 			});
@@ -115,11 +113,6 @@ export default async function BooksPage({
 				(b) => b.language_code === language
 			);
 		}
-		if (era) {
-			fallbackBooks = fallbackBooks.filter(
-				(b) => b.author && sampleBooks.find((sb) => sb.id === b.id)
-			);
-		}
 
 		// Sort
 		if (sort === "views") {
@@ -159,7 +152,6 @@ export default async function BooksPage({
 						categories={categories}
 						activeCategory={category}
 						activeLanguage={language}
-						activeEra={era}
 					/>
 				</aside>
 

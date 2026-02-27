@@ -11,7 +11,6 @@ interface FilterSidebarProps {
 	categories: any[];
 	activeCategory: string;
 	activeLanguage: string;
-	activeEra: string;
 }
 
 export function FilterSidebar({
@@ -19,7 +18,6 @@ export function FilterSidebar({
 	categories,
 	activeCategory,
 	activeLanguage,
-	activeEra,
 }: FilterSidebarProps) {
 	const searchParams = useSearchParams();
 	const s = dict.search;
@@ -34,12 +32,6 @@ export function FilterSidebar({
 		params.delete("page"); // reset pagination
 		return localePath(`/books?${params.toString()}`);
 	}
-
-	const eras = [
-		{ value: "Classical", label: s.classical },
-		{ value: "Medieval", label: s.medieval },
-		{ value: "Contemporary", label: s.contemporary },
-	];
 
 	const languages = [
 		{ code: "ar", label: "العربية" },
@@ -134,40 +126,6 @@ export function FilterSidebar({
 							)}
 						>
 							{lang.label}
-						</Link>
-					))}
-				</div>
-			</div>
-
-			{/* Era filter */}
-			<div>
-				<h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)] mb-3">
-					{s.filterByEra}
-				</h3>
-				<div className="space-y-1">
-					<Link
-						href={buildUrl("era", "")}
-						className={cn(
-							"block rounded-lg px-3 py-2 text-sm transition-colors",
-							!activeEra
-								? "bg-[var(--color-primary)] text-white"
-								: "hover:bg-[var(--color-border)]"
-						)}
-					>
-						All
-					</Link>
-					{eras.map((e) => (
-						<Link
-							key={e.value}
-							href={buildUrl("era", e.value)}
-							className={cn(
-								"block rounded-lg px-3 py-2 text-sm transition-colors",
-								activeEra === e.value
-									? "bg-[var(--color-primary)] text-white"
-									: "hover:bg-[var(--color-border)]"
-							)}
-						>
-							{e.label}
 						</Link>
 					))}
 				</div>

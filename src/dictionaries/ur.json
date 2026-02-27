@@ -18,7 +18,6 @@
 		"download": "ڈاؤن لوڈ",
 		"readOnline": "آن لائن پڑھیں",
 		"backToHome": "ہوم پر واپس جائیں",
-		"copyright": "پبلک ڈومین",
 		"allRightsReserved": "جملہ حقوق محفوظ ہیں"
 	},
 	"home": {
@@ -34,15 +33,11 @@
 		"placeholder": "عنوان، مصنف یا کلیدی لفظ سے تلاش کریں…",
 		"filterByCategory": "زمرے کے مطابق فلٹر",
 		"filterByLanguage": "زبان کے مطابق فلٹر",
-		"filterByEra": "دور کے مطابق فلٹر",
 		"resultsFor": "نتائج برائے",
 		"sortBy": "ترتیب",
 		"relevance": "مطابقت",
 		"mostViewed": "سب سے زیادہ دیکھی گئیں",
-		"newest": "نئی ترین",
-		"classical": "کلاسیکی",
-		"medieval": "قرون وسطیٰ",
-		"contemporary": "عصری"
+		"newest": "نئی ترین"
 	},
 	"book": {
 		"details": "کتاب کی تفصیلات",

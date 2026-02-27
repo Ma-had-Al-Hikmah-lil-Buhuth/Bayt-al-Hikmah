@@ -206,23 +206,6 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
 							</div>
 						)}
 					</div>
-
-					{/* Copyright badge */}
-					<div
-						className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${
-							book.copyright === "public_domain"
-								? "bg-green-100 text-green-800"
-								: book.copyright === "permission_granted"
-									? "bg-blue-100 text-blue-800"
-									: "bg-red-100 text-red-800"
-						}`}
-					>
-						{book.copyright === "public_domain"
-							? c.copyright
-							: book.copyright === "permission_granted"
-								? "Permission Granted"
-								: "Restricted"}
-					</div>
 				</div>
 
 				{/* ── Right: Details + Reader ─────────────────────────── */}

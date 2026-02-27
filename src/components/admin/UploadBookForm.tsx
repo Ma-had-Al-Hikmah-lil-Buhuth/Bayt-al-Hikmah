@@ -125,39 +125,21 @@ export function UploadBookForm({
 				</div>
 			</div>
 
-			{/* Language & Copyright */}
-			<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-				<div>
-					<label className="text-sm font-semibold block mb-1">
-						{b.language}
-					</label>
-					<select
-						name="language_code"
-						required
-						className="w-full rounded-lg border border-[var(--color-border)] px-3 py-2 text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none"
-					>
-						<option value="ar">العربية</option>
-						<option value="en">English</option>
-						<option value="bn">বাংলা</option>
-						<option value="ur">اردو</option>
-					</select>
-				</div>
-				<div>
-					<label className="text-sm font-semibold block mb-1">
-						Copyright
-					</label>
-					<select
-						name="copyright"
-						required
-						className="w-full rounded-lg border border-[var(--color-border)] px-3 py-2 text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none"
-					>
-						<option value="public_domain">Public Domain</option>
-						<option value="permission_granted">
-							Permission Granted
-						</option>
-						<option value="restricted">Restricted</option>
-					</select>
-				</div>
+			{/* Language */}
+			<div>
+				<label className="text-sm font-semibold block mb-1">
+					{b.language}
+				</label>
+				<select
+					name="language_code"
+					required
+					className="w-full rounded-lg border border-[var(--color-border)] px-3 py-2 text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none"
+				>
+					<option value="ar">العربية</option>
+					<option value="en">English</option>
+					<option value="bn">বাংলা</option>
+					<option value="ur">اردو</option>
+				</select>
 			</div>
 
 			{/* Description */}

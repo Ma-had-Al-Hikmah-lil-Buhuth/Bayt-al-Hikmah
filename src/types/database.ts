@@ -46,18 +46,12 @@ export interface Author {
 	id: string;
 	name: MultiLang;
 	bio: MultiLang;
-	era: string | null;
 	birth_date_hijri: string | null;
 	death_date_hijri: string | null;
 	photo_url: string | null;
 	created_at: string;
 	updated_at: string;
 }
-
-export type CopyrightStatus =
-	| "public_domain"
-	| "permission_granted"
-	| "restricted";
 
 export interface Book {
 	id: string;
@@ -72,7 +66,6 @@ export interface Book {
 	page_count: number | null;
 	is_downloadable: boolean;
 	is_featured: boolean;
-	copyright: CopyrightStatus;
 	view_count: number;
 	download_count: number;
 	published_at: string | null;
@@ -157,7 +150,6 @@ export interface SearchFilters {
 	query: string;
 	language?: string;
 	category?: string;
-	era?: string;
 	page?: number;
 	limit?: number;
 }

@@ -7,7 +7,6 @@ export async function GET(request: NextRequest) {
 	const query = searchParams.get("q") ?? "";
 	const category = searchParams.get("category");
 	const language = searchParams.get("language");
-	const era = searchParams.get("era");
 	const page = parseInt(searchParams.get("page") ?? "1", 10);
 	const limit = parseInt(searchParams.get("limit") ?? "20", 10);
 
@@ -19,7 +18,7 @@ export async function GET(request: NextRequest) {
 				search_query: query,
 				lang_code: language || null,
 				cat_slug: category || null,
-				author_era: era || null,
+				author_era: null,
 				result_limit: limit,
 				result_offset: (page - 1) * limit,
 			});

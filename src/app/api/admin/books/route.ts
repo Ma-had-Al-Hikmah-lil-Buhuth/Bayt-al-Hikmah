@@ -48,7 +48,6 @@ export async function POST(request: NextRequest) {
 		const authorId = formData.get("author_id") as string;
 		const categoryId = formData.get("category_id") as string;
 		const languageCode = formData.get("language_code") as string;
-		const copyright = formData.get("copyright") as string;
 		const descriptionEn = formData.get("description_en") as string;
 		const isDownloadable = formData.has("is_downloadable");
 		const isFeatured = formData.has("is_featured");
@@ -115,7 +114,6 @@ export async function POST(request: NextRequest) {
 				cover_image_url: coverUrl,
 				is_downloadable: isDownloadable,
 				is_featured: isFeatured,
-				copyright,
 			})
 			.select()
 			.single();

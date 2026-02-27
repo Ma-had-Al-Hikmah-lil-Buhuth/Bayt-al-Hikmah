@@ -18,7 +18,6 @@
 		"download": "ডাউনলোড",
 		"readOnline": "অনলাইনে পড়ুন",
 		"backToHome": "হোমে ফিরে যান",
-		"copyright": "পাবলিক ডোমেইন",
 		"allRightsReserved": "সর্বস্বত্ব সংরক্ষিত"
 	},
 	"home": {
@@ -34,15 +33,11 @@
 		"placeholder": "শিরোনাম, লেখক বা কীওয়ার্ড দিয়ে অনুসন্ধান করুন…",
 		"filterByCategory": "বিভাগ অনুযায়ী ফিল্টার",
 		"filterByLanguage": "ভাষা অনুযায়ী ফিল্টার",
-		"filterByEra": "যুগ অনুযায়ী ফিল্টার",
 		"resultsFor": "ফলাফল",
 		"sortBy": "সাজান",
 		"relevance": "প্রাসঙ্গিকতা",
 		"mostViewed": "সবচেয়ে বেশি দেখা",
-		"newest": "নতুন",
-		"classical": "ক্লাসিক্যাল",
-		"medieval": "মধ্যযুগীয়",
-		"contemporary": "সমকালীন"
+		"newest": "নতুন"
 	},
 	"book": {
 		"details": "বইয়ের বিবরণ",

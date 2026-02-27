@@ -18,7 +18,6 @@
 		"download": "تحميل",
 		"readOnline": "اقرأ مباشرة",
 		"backToHome": "العودة للرئيسية",
-		"copyright": "ملكية عامة",
 		"allRightsReserved": "جميع الحقوق محفوظة"
 	},
 	"home": {
@@ -34,15 +33,11 @@
 		"placeholder": "ابحث بالعنوان أو المؤلف أو الكلمة المفتاحية…",
 		"filterByCategory": "تصفية حسب القسم",
 		"filterByLanguage": "تصفية حسب اللغة",
-		"filterByEra": "تصفية حسب العصر",
 		"resultsFor": "نتائج البحث عن",
 		"sortBy": "ترتيب حسب",
 		"relevance": "الصلة",
 		"mostViewed": "الأكثر مشاهدة",
-		"newest": "الأحدث",
-		"classical": "العصر الكلاسيكي",
-		"medieval": "العصور الوسطى",
-		"contemporary": "المعاصر"
+		"newest": "الأحدث"
 	},
 	"book": {
 		"details": "تفاصيل الكتاب",
