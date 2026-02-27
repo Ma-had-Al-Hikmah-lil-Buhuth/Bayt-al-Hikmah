@@ -4,18 +4,15 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { localePath } from "@/lib/utils";
-import type { Locale } from "@/types/database";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface SearchBarProps {
-	locale: Locale;
 	dict: any;
 	initialQuery: string;
 	initialSort: string;
 }
 
 export function SearchBar({
-	locale,
 	dict,
 	initialQuery,
 	initialSort,
@@ -29,13 +26,13 @@ export function SearchBar({
 		const params = new URLSearchParams();
 		if (query) params.set("q", query);
 		if (initialSort !== "relevance") params.set("sort", initialSort);
-		router.push(localePath(locale, `/books?${params.toString()}`));
+		router.push(localePath(`/books?${params.toString()}`));
 	}
 
 	function handleSortChange(sort: string) {
 		const params = new URLSearchParams(window.location.search);
 		params.set("sort", sort);
-		router.push(localePath(locale, `/books?${params.toString()}`));
+		router.push(localePath(`/books?${params.toString()}`));
 	}
 
 	return (

@@ -18,11 +18,9 @@ import { t, localePath, cn, formatCount, truncate } from "@/lib/utils";
 import { AdminButton } from "./AdminButton";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { Modal } from "./Modal";
-import type { Locale } from "@/types/database";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface ManageBooksClientProps {
-	locale: Locale;
 	dict: any;
 	initialBooks: any[];
 	authors: any[];
@@ -30,7 +28,6 @@ interface ManageBooksClientProps {
 }
 
 export function ManageBooksClient({
-	locale,
 	dict,
 	initialBooks,
 	authors,
@@ -47,9 +44,9 @@ export function ManageBooksClient({
 
 	// Filter books
 	const filtered = books.filter((book: any) => {
-		const title = t(book.title, locale).toLowerCase();
+		const title = t(book.title).toLowerCase();
 		const authorName = book.author
-			? t(book.author.name, locale).toLowerCase()
+			? t(book.author.name).toLowerCase()
 			: "";
 		const matchesSearch =
 			!search ||
@@ -173,7 +170,7 @@ export function ManageBooksClient({
 						{filtered.length} of {books.length} books
 					</p>
 				</div>
-				<Link href={localePath(locale, "/admin/books/new")}>
+				<Link href={localePath("/admin/books/new")}>
 					<AdminButton icon={<Plus className="h-4 w-4" />}>
 						{a.uploadBook}
 					</AdminButton>
@@ -200,7 +197,7 @@ export function ManageBooksClient({
 					<option value="">All Categories</option>
 					{categories.map((cat: any) => (
 						<option key={cat.id} value={cat.id}>
-							{t(cat.name, locale)}
+							{t(cat.name)}
 						</option>
 					))}
 				</select>
@@ -268,7 +265,7 @@ export function ManageBooksClient({
 												)}
 												<div className="min-w-0">
 													<p className="font-medium truncate max-w-[200px]">
-														{t(book.title, locale)}
+														{t(book.title)}
 													</p>
 													<p className="text-xs text-[var(--color-text-muted)] uppercase">
 														{book.language_code} •{" "}
@@ -282,15 +279,14 @@ export function ManageBooksClient({
 										</td>
 										<td className="px-4 py-3 hidden md:table-cell text-[var(--color-text-muted)]">
 											{book.author
-												? t(book.author.name, locale)
+												? t(book.author.name)
 												: "—"}
 										</td>
 										<td className="px-4 py-3 hidden lg:table-cell">
 											<span className="inline-block px-2 py-0.5 rounded-full text-xs bg-[var(--color-primary)]/10 text-[var(--color-primary)] font-medium">
 												{book.category
 													? t(
-															book.category.name,
-															locale
+															book.category.name
 														)
 													: "—"}
 											</span>
@@ -369,7 +365,7 @@ export function ManageBooksClient({
 			<ConfirmDialog
 				open={!!deleteTarget}
 				title="Delete Book"
-				message={`Are you sure you want to delete "${deleteTarget ? t(deleteTarget.title, locale) : ""}"? This cannot be undone.`}
+				message={`Are you sure you want to delete "${deleteTarget ? t(deleteTarget.title) : ""}"? This cannot be undone.`}
 				confirmLabel="Delete"
 				variant="danger"
 				loading={deleting}
@@ -432,7 +428,7 @@ export function ManageBooksClient({
 								>
 									{authors.map((auth: any) => (
 										<option key={auth.id} value={auth.id}>
-											{t(auth.name, locale)}
+											{t(auth.name)}
 										</option>
 									))}
 								</select>
@@ -449,7 +445,7 @@ export function ManageBooksClient({
 								>
 									{categories.map((cat: any) => (
 										<option key={cat.id} value={cat.id}>
-											{t(cat.name, locale)}
+											{t(cat.name)}
 										</option>
 									))}
 								</select>

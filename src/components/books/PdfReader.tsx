@@ -11,7 +11,6 @@ import {
 	Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Locale } from "@/types/database";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
@@ -22,11 +21,10 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/b
 interface PdfReaderProps {
 	pdfUrl: string;
 	bookId: string;
-	locale: Locale;
 	dict: any;
 }
 
-export function PdfReader({ pdfUrl, bookId, locale, dict }: PdfReaderProps) {
+export function PdfReader({ pdfUrl, bookId, dict }: PdfReaderProps) {
 	const [numPages, setNumPages] = useState(0);
 	const [pageNumber, setPageNumber] = useState(1);
 	const [isFullScreen, setIsFullScreen] = useState(false);

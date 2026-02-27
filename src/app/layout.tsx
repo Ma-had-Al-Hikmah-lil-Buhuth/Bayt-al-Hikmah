@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
+import { Footer } from "@/components/layout/Footer";
+import { Header } from "@/components/layout/Header";
+import { getDictionary } from "@/dictionaries";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -8,23 +10,16 @@ export const metadata: Metadata = {
 		"A comprehensive online Islamic library with thousands of authentic books from classical and contemporary scholars.",
 };
 
-/**
- * Root layout — renders <html> and <body> as required by Next.js 16+.
- * Reads locale / direction from middleware-set headers.
- */
 export default async function RootLayout({
 	children,
 }: {
 	children: React.ReactNode;
 }) {
-	const hdrs = await headers();
-	const locale = hdrs.get("x-locale") || "en";
-	const dir = hdrs.get("x-direction") || "ltr";
+	const dict = await getDictionary();
 
 	return (
-		<html lang={locale} dir={dir} suppressHydrationWarning>
+		<html lang="en" dir="ltr" suppressHydrationWarning>
 			<head>
-				{/* Google Fonts: Latin + Arabic */}
 				<link rel="preconnect" href="https://fonts.googleapis.com" />
 				<link
 					rel="preconnect"
@@ -37,7 +32,9 @@ export default async function RootLayout({
 				/>
 			</head>
 			<body className="min-h-screen flex flex-col antialiased">
-				{children}
+				<Header dict={dict} />
+				<main className="flex-1">{children}</main>
+				<Footer dict={dict} />
 			</body>
 		</html>
 	);

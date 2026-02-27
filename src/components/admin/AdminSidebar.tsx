@@ -15,7 +15,6 @@ import {
 	X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Locale } from "@/types/database";
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
 	LayoutDashboard,
@@ -34,14 +33,12 @@ interface NavItem {
 
 interface AdminSidebarClientProps {
 	navItems: NavItem[];
-	locale: Locale;
 	backLabel: string;
 	backHref: string;
 }
 
 export function AdminSidebarClient({
 	navItems,
-	locale,
 	backLabel,
 	backHref,
 }: AdminSidebarClientProps) {

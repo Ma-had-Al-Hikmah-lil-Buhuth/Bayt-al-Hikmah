@@ -6,17 +6,14 @@ import { t, cn } from "@/lib/utils";
 import { AdminButton } from "./AdminButton";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { Modal } from "./Modal";
-import type { Locale } from "@/types/database";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface ManageAuthorsClientProps {
-	locale: Locale;
 	dict: any;
 	initialAuthors: any[];
 }
 
 export function ManageAuthorsClient({
-	locale,
 	dict,
 	initialAuthors,
 }: ManageAuthorsClientProps) {
@@ -31,7 +28,7 @@ export function ManageAuthorsClient({
 	const a = dict.admin;
 
 	const filtered = authors.filter((author: any) => {
-		const name = t(author.name, locale).toLowerCase();
+		const name = t(author.name).toLowerCase();
 		const matchesSearch = !search || name.includes(search.toLowerCase());
 		const matchesEra = !filterEra || author.era === filterEra;
 		return matchesSearch && matchesEra;
@@ -318,7 +315,7 @@ export function ManageAuthorsClient({
 								)}
 								<div className="flex-1 min-w-0">
 									<h3 className="font-semibold truncate">
-										{t(author.name, locale)}
+										{t(author.name)}
 									</h3>
 									{author.era && (
 										<span className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs bg-[var(--color-border)] text-[var(--color-text-muted)]">
@@ -385,7 +382,7 @@ export function ManageAuthorsClient({
 			<ConfirmDialog
 				open={!!deleteTarget}
 				title="Delete Author"
-				message={`Are you sure you want to delete "${deleteTarget ? t(deleteTarget.name, locale) : ""}"? Books by this author must be reassigned first.`}
+				message={`Are you sure you want to delete "${deleteTarget ? t(deleteTarget.name) : ""}"? Books by this author must be reassigned first.`}
 				confirmLabel="Delete"
 				variant="danger"
 				loading={deleting}

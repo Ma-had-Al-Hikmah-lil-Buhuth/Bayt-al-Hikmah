@@ -4,18 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Upload, Loader2, X, Plus } from "lucide-react";
 import { localePath, t } from "@/lib/utils";
-import type { Locale } from "@/types/database";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface UploadBookFormProps {
-	locale: Locale;
 	dict: any;
 	categories: any[];
 	authors: any[];
 }
 
 export function UploadBookForm({
-	locale,
 	dict,
 	categories,
 	authors,
@@ -44,7 +41,7 @@ export function UploadBookForm({
 				throw new Error(data.error || "Upload failed");
 			}
 
-			router.push(localePath(locale, "/admin/books"));
+			router.push(localePath("/admin/books"));
 			router.refresh();
 		} catch (err: any) {
 			setError(err.message);
@@ -104,7 +101,7 @@ export function UploadBookForm({
 						<option value="">Select author…</option>
 						{authors.map((auth: any) => (
 							<option key={auth.id} value={auth.id}>
-								{t(auth.name, locale)}
+								{t(auth.name)}
 							</option>
 						))}
 					</select>
@@ -121,7 +118,7 @@ export function UploadBookForm({
 						<option value="">Select category…</option>
 						{categories.map((cat: any) => (
 							<option key={cat.id} value={cat.id}>
-								{t(cat.name, locale)}
+								{t(cat.name)}
 							</option>
 						))}
 					</select>

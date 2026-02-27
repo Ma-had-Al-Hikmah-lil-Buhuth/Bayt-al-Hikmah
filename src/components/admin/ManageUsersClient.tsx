@@ -14,11 +14,9 @@ import {
 import { cn } from "@/lib/utils";
 import { AdminButton } from "./AdminButton";
 import { ConfirmDialog } from "./ConfirmDialog";
-import type { Locale } from "@/types/database";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface ManageUsersClientProps {
-	locale: Locale;
 	dict: any;
 	initialUsers: any[];
 }
@@ -43,7 +41,6 @@ const ROLE_CONFIG: Record<string, { label: string; icon: any; color: string }> =
 	};
 
 export function ManageUsersClient({
-	locale,
 	dict,
 	initialUsers,
 }: ManageUsersClientProps) {

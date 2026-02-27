@@ -1,18 +1,16 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import type { Locale, MultiLang } from "@/types/database";
+import type { MultiLang } from "@/types/database";
 
 /** Merge Tailwind classes safely */
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
-/** Resolve a multilingual JSONB field to the current locale, falling back to English */
-export function t(field: MultiLang | undefined | null, locale: Locale): string {
+/** Resolve a multilingual JSONB field to English */
+export function t(field: MultiLang | undefined | null): string {
 	if (!field) return "";
-	return (
-		field[locale] || field.en || Object.values(field).find(Boolean) || ""
-	);
+	return field.en || Object.values(field).find(Boolean) || "";
 }
 
 /** Format large numbers (1200 → 1.2K) */
@@ -28,9 +26,9 @@ export function truncate(str: string, max: number): string {
 	return str.slice(0, max).trimEnd() + "…";
 }
 
-/** Build a path with locale prefix */
-export function localePath(locale: Locale, path: string): string {
-	return `/${locale}${path.startsWith("/") ? path : `/${path}`}`;
+/** Build a path (locale prefix removed — English only for now) */
+export function localePath(path: string): string {
+	return path.startsWith("/") ? path : `/${path}`;
 }
 
 /** Slugify a string (ascii + arabic-safe) */

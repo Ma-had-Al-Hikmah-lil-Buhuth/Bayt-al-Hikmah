@@ -15,17 +15,14 @@ import { t, cn, slugify } from "@/lib/utils";
 import { AdminButton } from "./AdminButton";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { Modal } from "./Modal";
-import type { Locale } from "@/types/database";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface ManageCategoriesClientProps {
-	locale: Locale;
 	dict: any;
 	initialCategories: any[];
 }
 
 export function ManageCategoriesClient({
-	locale,
 	dict,
 	initialCategories,
 }: ManageCategoriesClientProps) {
@@ -39,7 +36,7 @@ export function ManageCategoriesClient({
 	const a = dict.admin;
 
 	const filtered = categories.filter((cat: any) => {
-		const name = t(cat.name, locale).toLowerCase();
+		const name = t(cat.name).toLowerCase();
 		return !search || name.includes(search.toLowerCase());
 	});
 
@@ -230,7 +227,7 @@ export function ManageCategoriesClient({
 								.filter((c: any) => c.id !== category?.id)
 								.map((c: any) => (
 									<option key={c.id} value={c.id}>
-										{t(c.name, locale)}
+										{t(c.name)}
 									</option>
 								))}
 						</select>
@@ -366,7 +363,7 @@ export function ManageCategoriesClient({
 								{/* Info */}
 								<div className="flex-1 min-w-0">
 									<h3 className="font-semibold text-sm">
-										{t(cat.name, locale)}
+										{t(cat.name)}
 									</h3>
 									{cat.description?.en && (
 										<p className="text-xs text-[var(--color-text-muted)] truncate">
@@ -425,7 +422,7 @@ export function ManageCategoriesClient({
 			<ConfirmDialog
 				open={!!deleteTarget}
 				title="Delete Category"
-				message={`Are you sure you want to delete "${deleteTarget ? t(deleteTarget.name, locale) : ""}"? Books in this category must be reassigned first.`}
+				message={`Are you sure you want to delete "${deleteTarget ? t(deleteTarget.name) : ""}"? Books in this category must be reassigned first.`}
 				confirmLabel="Delete"
 				variant="danger"
 				loading={deleting}

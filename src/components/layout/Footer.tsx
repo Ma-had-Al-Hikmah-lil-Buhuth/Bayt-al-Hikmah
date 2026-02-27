@@ -1,15 +1,13 @@
 import { BookOpen } from "lucide-react";
 import Link from "next/link";
 import { localePath } from "@/lib/utils";
-import type { Locale } from "@/types/database";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface FooterProps {
-	locale: Locale;
 	dict: any;
 }
 
-export function Footer({ locale, dict }: FooterProps) {
+export function Footer({ dict }: FooterProps) {
 	const c = dict.common;
 	const year = new Date().getFullYear();
 
@@ -20,7 +18,7 @@ export function Footer({ locale, dict }: FooterProps) {
 					{/* Brand */}
 					<div className="space-y-4">
 						<Link
-							href={localePath(locale, "/")}
+							href={localePath("/")}
 							className="flex items-center gap-2 text-lg font-bold text-[var(--color-primary)]"
 						>
 							<BookOpen className="h-6 w-6" />
@@ -47,7 +45,6 @@ export function Footer({ locale, dict }: FooterProps) {
 								<li key={slug}>
 									<Link
 										href={localePath(
-											locale,
 											`/categories/${slug}`
 										)}
 										className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors capitalize"
@@ -81,7 +78,7 @@ export function Footer({ locale, dict }: FooterProps) {
 						<ul className="space-y-2">
 							<li>
 								<Link
-									href={localePath(locale, "/about")}
+									href={localePath("/about")}
 									className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors"
 								>
 									{c.about}

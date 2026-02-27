@@ -9,11 +9,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { LanguageBadge } from "@/components/books/LanguageBadge";
 import { formatCount, localePath, t } from "@/lib/utils";
-import type { Locale } from "@/types/database";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface BooksGridProps {
-	locale: Locale;
 	dict: any;
 	books: any[];
 	currentPage: number;
@@ -22,7 +20,6 @@ interface BooksGridProps {
 }
 
 export function BooksGrid({
-	locale,
 	dict,
 	books,
 	currentPage,
@@ -56,17 +53,16 @@ export function BooksGrid({
 
 			<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
 				{books.map((book: any) => {
-					const title = t(book.title, locale);
+					const title = t(book.title);
 					const authorName = t(
-						book.author?.name ?? book.author_name,
-						locale
+						book.author?.name ?? book.author_name
 					);
 					const slug = book.slug ?? book.id;
 
 					return (
 						<Link
 							key={book.id}
-							href={localePath(locale, `/books/${slug}`)}
+							href={localePath(`/books/${slug}`)}
 							className="book-card group rounded-xl border border-[var(--color-border)] overflow-hidden bg-[var(--color-surface)]"
 						>
 							{/* Cover */}
@@ -120,7 +116,6 @@ export function BooksGrid({
 					{currentPage > 1 && (
 						<Link
 							href={localePath(
-								locale,
 								`/books?page=${currentPage - 1}${searchQuery ? `&q=${searchQuery}` : ""}`
 							)}
 							className="flex items-center gap-1 rounded-lg border border-[var(--color-border)] px-4 py-2 text-sm hover:bg-[var(--color-border)] transition-colors"
@@ -138,7 +133,6 @@ export function BooksGrid({
 					{currentPage < totalPages && (
 						<Link
 							href={localePath(
-								locale,
 								`/books?page=${currentPage + 1}${searchQuery ? `&q=${searchQuery}` : ""}`
 							)}
 							className="flex items-center gap-1 rounded-lg border border-[var(--color-border)] px-4 py-2 text-sm hover:bg-[var(--color-border)] transition-colors"

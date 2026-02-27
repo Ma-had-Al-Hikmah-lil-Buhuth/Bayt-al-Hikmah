@@ -1,9 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
-import { LOCALE_DIRECTION, LOCALES, type Locale } from "@/types/database";
 
 const PUBLIC_FILE = /\.(.*)$/;
-const DEFAULT_LOCALE: Locale = "en";
 
 export async function proxy(request: NextRequest) {
 	const { pathname } = request.nextUrl;
@@ -11,21 +9,6 @@ export async function proxy(request: NextRequest) {
 	// Skip public files and API routes
 	if (PUBLIC_FILE.test(pathname) || pathname.startsWith("/api")) {
 		return NextResponse.next();
-	}
-
-	// ── Locale detection ──────────────────────────────────────────────────────
-	const segments = pathname.split("/");
-	const maybeLocale = segments[1] as Locale;
-	const hasLocale = LOCALES.includes(maybeLocale);
-
-	if (!hasLocale) {
-		const locale =
-			(request.cookies.get("NEXT_LOCALE")?.value as Locale) ||
-			DEFAULT_LOCALE;
-
-		const url = request.nextUrl.clone();
-		url.pathname = `/${locale}${pathname}`;
-		return NextResponse.redirect(url);
 	}
 
 	// ── Supabase session refresh ──────────────────────────────────────────────
@@ -58,11 +41,6 @@ export async function proxy(request: NextRequest) {
 
 	// Refresh session
 	await supabase.auth.getUser();
-
-	// Set direction header for the layout
-	const dir = LOCALE_DIRECTION[maybeLocale] || "ltr";
-	response.headers.set("x-locale", maybeLocale);
-	response.headers.set("x-direction", dir);
 
 	return response;
 }

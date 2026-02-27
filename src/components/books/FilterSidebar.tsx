@@ -4,11 +4,9 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { BookOpen, Filter } from "lucide-react";
 import { cn, localePath, t } from "@/lib/utils";
-import type { Locale } from "@/types/database";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface FilterSidebarProps {
-	locale: Locale;
 	dict: any;
 	categories: any[];
 	activeCategory: string;
@@ -17,7 +15,6 @@ interface FilterSidebarProps {
 }
 
 export function FilterSidebar({
-	locale,
 	dict,
 	categories,
 	activeCategory,
@@ -35,7 +32,7 @@ export function FilterSidebar({
 			params.delete(key);
 		}
 		params.delete("page"); // reset pagination
-		return localePath(locale, `/books?${params.toString()}`);
+		return localePath(`/books?${params.toString()}`);
 	}
 
 	const eras = [
@@ -102,7 +99,7 @@ export function FilterSidebar({
 									: "hover:bg-[var(--color-border)]"
 							)}
 						>
-							{t(cat.name, locale)}
+							{t(cat.name)}
 						</Link>
 					))}
 				</div>

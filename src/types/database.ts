@@ -153,21 +153,17 @@ export interface SearchFilters {
 
 // ─── Locale ─────────────────────────────────────────────────────────────────
 
-export type Locale = "en" | "ar" | "bn" | "ur";
-export type Direction = "ltr" | "rtl";
+// ─── Locale (English only for now — expand later) ──────────────────────────
 
-export const LOCALES: Locale[] = ["en", "ar", "bn", "ur"];
+export type Locale = "en";
+export type Direction = "ltr";
+
+export const LOCALES: Locale[] = ["en"];
 
 export const LOCALE_DIRECTION: Record<Locale, Direction> = {
 	en: "ltr",
-	ar: "rtl",
-	bn: "ltr",
-	ur: "rtl",
 };
 
 export const LOCALE_NAMES: Record<Locale, string> = {
 	en: "English",
-	ar: "العربية",
-	bn: "বাংলা",
-	ur: "اردو",
 };
