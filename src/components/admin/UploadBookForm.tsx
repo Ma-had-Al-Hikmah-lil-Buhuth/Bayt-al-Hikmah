@@ -576,11 +576,17 @@ const TagInput = ({ tags, onChange }: TagInputProps) => {
 	);
 };
 
-// ─── Translation Link Search ────────────────────────────────────────────────
+// ─── Translation Links (multi-select) ───────────────────────────────────────
 
-interface TranslationLinkProps {
-	value: { id: number; title: string; language_code: string } | null;
-	onChange: (val: { id: number; title: string; language_code: string } | null) => void;
+interface TranslationItem {
+	id: number;
+	title: string;
+	language_code: string;
+}
+
+interface TranslationLinksProps {
+	value: TranslationItem[];
+	onChange: (val: TranslationItem[]) => void;
 }
 
 const LANG_LABELS: Record<string, string> = {
@@ -590,11 +596,12 @@ const LANG_LABELS: Record<string, string> = {
 	ur: "🇵🇰 Urdu",
 };
 
-const TranslationLink = ({ value, onChange }: TranslationLinkProps) => {
+const TranslationLinks = ({ value, onChange }: TranslationLinksProps) => {
 	const [query, setQuery] = useState("");
 	const [results, setResults] = useState<any[]>([]);
 	const [isOpen, setIsOpen] = useState(false);
 	const [loading, setLoading] = useState(false);
+	const [showSearch, setShowSearch] = useState(false);
 	const debouncedQuery = useDebounce(query, 300);
 	const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -630,91 +637,148 @@ const TranslationLink = ({ value, onChange }: TranslationLinkProps) => {
 		return () => document.removeEventListener("mousedown", handleClickOutside);
 	}, []);
 
-	if (value) {
-		return (
-			<div>
-				<label className="text-sm font-semibold block mb-1.5">
-					<Link2 className="inline h-4 w-4 mr-1 -mt-0.5" />
-					Translation of (original book)
-				</label>
-				<div className="flex items-center gap-2 rounded-lg border border-blue-300/50 bg-blue-50/50 px-3 py-2.5">
-					<BookOpen className="h-4 w-4 text-blue-500 shrink-0" />
-					<div className="flex-1 min-w-0">
-						<span className="text-sm font-medium block truncate">{value.title}</span>
-						<span className="text-xs text-[var(--color-text-muted)]">
-							{LANG_LABELS[value.language_code] || value.language_code.toUpperCase()}
-						</span>
-					</div>
-					<button
-						type="button"
-						onClick={() => onChange(null)}
-						className="p-0.5 rounded hover:bg-[var(--color-border)] transition-colors cursor-pointer"
-					>
-						<X className="h-3.5 w-3.5 text-[var(--color-text-muted)]" />
-					</button>
-				</div>
-			</div>
-		);
-	}
+	const handleSelect = (book: any) => {
+		// Don't add duplicates
+		if (value.some((v) => v.id === book.id)) return;
+		onChange([
+			...value,
+			{
+				id: book.id,
+				title: t(book.title),
+				language_code: book.language_code,
+			},
+		]);
+		setQuery("");
+		setIsOpen(false);
+		setShowSearch(false);
+	};
+
+	const handleRemove = (id: number) => {
+		onChange(value.filter((v) => v.id !== id));
+	};
+
+	// Filter out already-selected books from results
+	const selectedIds = new Set(value.map((v) => v.id));
+	const filteredResults = results.filter((r) => !selectedIds.has(r.id));
 
 	return (
-		<div ref={wrapperRef} className="relative">
-			<label className="text-sm font-semibold block mb-1.5">
-				<Link2 className="inline h-4 w-4 mr-1 -mt-0.5" />
-				Translation of (optional)
-			</label>
-			<p className="text-xs text-[var(--color-text-muted)] mb-2">
-				If this book is a translation of another book, search and link it here.
-			</p>
-			<div className="relative">
-				<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--color-text-muted)]" />
-				<input
-					type="text"
-					value={query}
-					onChange={(e) => {
-						setQuery(e.target.value);
-						setIsOpen(true);
-					}}
-					onFocus={() => query && setIsOpen(true)}
-					placeholder="Search for the original book…"
-					className="w-full rounded-lg border border-[var(--color-border)] pl-9 pr-3 py-2.5 text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none"
-				/>
-				{loading && (
-					<Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-[var(--color-text-muted)]" />
-				)}
+		<div className="space-y-3">
+			<div className="flex items-center justify-between">
+				<div>
+					<label className="text-sm font-semibold block">
+						Linked Translations
+					</label>
+					<p className="text-xs text-[var(--color-text-muted)] mt-0.5">
+						Link this book to other books that are translations of the same work.
+					</p>
+				</div>
+				<button
+					type="button"
+					onClick={() => setShowSearch(true)}
+					className="flex items-center gap-1 text-sm font-medium text-[var(--color-primary)] hover:opacity-80 transition-opacity cursor-pointer"
+				>
+					<Plus className="h-4 w-4" />
+					Add
+				</button>
 			</div>
-			{isOpen && results.length > 0 && (
-				<div className="absolute z-30 w-full mt-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] shadow-lg max-h-56 overflow-y-auto">
-					{results.map((book) => (
+
+			{/* Selected translations */}
+			{value.length > 0 && (
+				<div className="space-y-2">
+					{value.map((item) => (
+						<div
+							key={item.id}
+							className="flex items-center gap-2 rounded-lg border border-blue-300/50 bg-blue-50/50 px-3 py-2.5"
+						>
+							<BookOpen className="h-4 w-4 text-blue-500 shrink-0" />
+							<div className="flex-1 min-w-0">
+								<span className="text-sm font-medium block truncate">{item.title}</span>
+								<span className="text-xs text-[var(--color-text-muted)]">
+									{LANG_LABELS[item.language_code] || item.language_code.toUpperCase()}
+								</span>
+							</div>
+							<button
+								type="button"
+								onClick={() => handleRemove(item.id)}
+								className="p-0.5 rounded hover:bg-[var(--color-border)] transition-colors cursor-pointer"
+							>
+								<X className="h-3.5 w-3.5 text-[var(--color-text-muted)]" />
+							</button>
+						</div>
+					))}
+				</div>
+			)}
+
+			{/* Search input (shown when + is clicked) */}
+			{showSearch && (
+				<div ref={wrapperRef} className="relative">
+					<div className="relative">
+						<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--color-text-muted)]" />
+						<input
+							type="text"
+							value={query}
+							onChange={(e) => {
+								setQuery(e.target.value);
+								setIsOpen(true);
+							}}
+							onFocus={() => query && setIsOpen(true)}
+							autoFocus
+							placeholder="Search for a book to link…"
+							className="w-full rounded-lg border border-[var(--color-border)] pl-9 pr-10 py-2.5 text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none"
+						/>
 						<button
-							key={book.id}
 							type="button"
 							onClick={() => {
-								onChange({
-									id: book.id,
-									title: t(book.title),
-									language_code: book.language_code,
-								});
+								setShowSearch(false);
 								setQuery("");
 								setIsOpen(false);
 							}}
-							className="w-full text-left px-3 py-2.5 text-sm hover:bg-[var(--color-border)] transition-colors cursor-pointer"
+							className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-[var(--color-border)] transition-colors cursor-pointer"
 						>
-							<div className="flex items-center gap-2">
-								<BookOpen className="h-3.5 w-3.5 text-[var(--color-text-muted)] shrink-0" />
-								<span className="font-medium truncate">{t(book.title)}</span>
-								<span className="ml-auto text-xs text-[var(--color-text-muted)] shrink-0">
-									{LANG_LABELS[book.language_code] || book.language_code.toUpperCase()}
-								</span>
-							</div>
-							{book.author && (
-								<p className="text-xs text-[var(--color-text-muted)] ml-5.5 mt-0.5">
-									by {t(book.author.name)}
-								</p>
-							)}
+							<X className="h-3.5 w-3.5 text-[var(--color-text-muted)]" />
 						</button>
-					))}
+						{loading && (
+							<Loader2 className="absolute right-9 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-[var(--color-text-muted)]" />
+						)}
+					</div>
+					{isOpen && filteredResults.length > 0 && (
+						<div className="absolute z-30 w-full mt-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] shadow-lg max-h-56 overflow-y-auto">
+							{filteredResults.map((book) => (
+								<button
+									key={book.id}
+									type="button"
+									onClick={() => handleSelect(book)}
+									className="w-full text-left px-3 py-2.5 text-sm hover:bg-[var(--color-border)] transition-colors cursor-pointer"
+								>
+									<div className="flex items-center gap-2">
+										<BookOpen className="h-3.5 w-3.5 text-[var(--color-text-muted)] shrink-0" />
+										<span className="font-medium truncate">{t(book.title)}</span>
+										<span className="ml-auto text-xs text-[var(--color-text-muted)] shrink-0">
+											{LANG_LABELS[book.language_code] || book.language_code.toUpperCase()}
+										</span>
+									</div>
+									{book.author && (
+										<p className="text-xs text-[var(--color-text-muted)] ml-5.5 mt-0.5">
+											by {t(book.author.name)}
+										</p>
+									)}
+								</button>
+							))}
+						</div>
+					)}
+					{isOpen && query && filteredResults.length === 0 && !loading && (
+						<div className="absolute z-30 w-full mt-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] shadow-lg px-3 py-4 text-sm text-[var(--color-text-muted)] text-center">
+							No books found
+						</div>
+					)}
 				</div>
+			)}
+
+			{/* Empty state */}
+			{value.length === 0 && !showSearch && (
+				<p className="text-xs text-[var(--color-text-muted)] italic">
+					No translations linked yet. Tap <strong>+ Add</strong> to connect related books.
+				</p>
 			)}
 		</div>
 	);
@@ -759,11 +823,11 @@ export function UploadBookForm({ dict, categories }: UploadBookFormProps) {
 	const [author, setAuthor] = useState<{ id: number; name: string } | null>(null);
 	const [translator, setTranslator] = useState<{ id: number; name: string } | null>(null);
 	const [tags, setTags] = useState<{ id?: number; name: string }[]>([]);
-	const [translationOf, setTranslationOf] = useState<{
+	const [translationLinks, setTranslationLinks] = useState<{
 		id: number;
 		title: string;
 		language_code: string;
-	} | null>(null);
+	}[]>([]);
 	const [selectedLanguage, setSelectedLanguage] = useState("");
 	const [selectedCategory, setSelectedCategory] = useState("");
 
@@ -822,7 +886,9 @@ export function UploadBookForm({ dict, categories }: UploadBookFormProps) {
 		}
 		formData.set("language_code", selectedLanguage);
 		formData.set("category_id", selectedCategory);
-		if (translationOf) formData.set("translation_of_id", String(translationOf.id));
+		if (translationLinks.length > 0) {
+			formData.set("translation_ids", JSON.stringify(translationLinks.map((l) => l.id)));
+		}
 
 		// Send tags as JSON (include names so server can create missing ones)
 		formData.set("tags", JSON.stringify(tags));
@@ -973,9 +1039,9 @@ export function UploadBookForm({ dict, categories }: UploadBookFormProps) {
 					</Section>
 				)}
 
-				{/* ── Section 5: Translation Link ────────────────────── */}
-				<Section icon={Link2} title="Translation Link">
-					<TranslationLink value={translationOf} onChange={setTranslationOf} />
+				{/* ── Section 5: Translation Links ───────────────────── */}
+				<Section icon={Link2} title="Linked Translations">
+					<TranslationLinks value={translationLinks} onChange={setTranslationLinks} />
 				</Section>
 
 				{/* ── Section 6: Description ──────────────────────────── */}

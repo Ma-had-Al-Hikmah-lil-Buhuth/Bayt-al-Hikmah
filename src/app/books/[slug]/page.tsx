@@ -57,16 +57,25 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
 		// Increment view count (fire-and-forget)
 		supabase.rpc("increment_view_count", { book_id_param: book.id }).then();
 
-		// Fetch translations — books that share the same original or are the original
-		const originalId = book.translation_of_id || book.id;
-		const { data: translationData } = await supabase
-			.from("books")
-			.select("id, title, slug, language_code, author:authors(name)")
-			.or(`id.eq.${originalId},translation_of_id.eq.${originalId}`)
-			.neq("id", book.id)
-			.order("language_code");
+		// Fetch translations via the book_translations junction table
+		// Find all books linked to this book (symmetric: could be in book_a_id or book_b_id)
+		const { data: linkRows } = await supabase
+			.from("book_translations")
+			.select("book_a_id, book_b_id")
+			.or(`book_a_id.eq.${book.id},book_b_id.eq.${book.id}`);
 
-		translations = translationData ?? [];
+		if (linkRows && linkRows.length > 0) {
+			const linkedIds = linkRows.map((r) =>
+				r.book_a_id === book.id ? r.book_b_id : r.book_a_id
+			);
+			const { data: translationData } = await supabase
+				.from("books")
+				.select("id, title, slug, language_code, author:authors(name)")
+				.in("id", linkedIds)
+				.order("language_code");
+
+			translations = translationData ?? [];
+		}
 
 		// Fetch related books (same category, different book)
 		const { data: related } = await supabase

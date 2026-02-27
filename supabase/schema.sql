@@ -61,7 +61,6 @@ CREATE TABLE public.books (
     translator_id INT REFERENCES public.authors(id) ON DELETE SET NULL,
     category_id VARCHAR(60) NOT NULL,   -- matches id from categories.json
     language_code VARCHAR(5) NOT NULL REFERENCES public.languages(code),
-    translation_of_id INT REFERENCES public.books(id) ON DELETE SET NULL,
     description JSONB DEFAULT '{}',
     pdf_url TEXT NOT NULL,
     cover_image_url TEXT,
@@ -80,12 +79,28 @@ CREATE INDEX idx_books_translator ON public.books(translator_id);
 CREATE INDEX idx_books_category ON public.books(category_id);
 CREATE INDEX idx_books_language ON public.books(language_code);
 CREATE INDEX idx_books_slug ON public.books(slug);
-CREATE INDEX idx_books_translation_of ON public.books(translation_of_id);
 CREATE INDEX idx_books_featured ON public.books(is_featured) WHERE is_featured = TRUE;
 CREATE INDEX idx_books_view_count ON public.books(view_count DESC);
 CREATE INDEX idx_books_title_gin ON public.books USING GIN (title jsonb_path_ops);
 
 COMMENT ON TABLE public.books IS 'Book catalogue with multilingual metadata';
+
+-- ============================================================================
+-- 3b. BOOK TRANSLATIONS (many-to-many self-join)
+-- ============================================================================
+-- Every pair of books that are translations of each other gets a row.
+-- Always stored with book_a_id < book_b_id to avoid duplicate pairs.
+CREATE TABLE public.book_translations (
+    book_a_id INT NOT NULL REFERENCES public.books(id) ON DELETE CASCADE,
+    book_b_id INT NOT NULL REFERENCES public.books(id) ON DELETE CASCADE,
+    PRIMARY KEY (book_a_id, book_b_id),
+    CHECK (book_a_id < book_b_id)
+);
+
+CREATE INDEX idx_book_translations_a ON public.book_translations(book_a_id);
+CREATE INDEX idx_book_translations_b ON public.book_translations(book_b_id);
+
+COMMENT ON TABLE public.book_translations IS 'Symmetric many-to-many: books that are translations of each other';
 
 -- ============================================================================
 -- 4. TAGS (many-to-many flexible tagging)
@@ -239,19 +254,23 @@ $$;
 CREATE OR REPLACE FUNCTION public.set_updated_at()
 RETURNS TRIGGER LANGUAGE plpgsql AS
 $$
-BEGIN
-NEW.updated_at = NOW();
-RETURN NEW;
-END;
-$$;
+ALTER TABLE public.authors ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.books ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.book_translations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.tags ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.download_logs ENABLE ROW LEVEL SECURITY;
 
-CREATE TRIGGER trg_books_updated BEFORE UPDATE ON public.books
-FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+CREATE POLICY "Authors are publicly readable" ON public.authors
+FOR SELECT USING (TRUE);
 
-CREATE TRIGGER trg_authors_updated BEFORE UPDATE ON public.authors
-FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+CREATE POLICY "Books are publicly readable" ON public.books
+FOR SELECT USING (TRUE);
 
--- ============================================================================
+CREATE POLICY "Book translations are publicly readable" ON public.book_translations
+FOR SELECT USING (TRUE);
+
+CREATE POLICY "Tags are publicly readable" ON public.tags
+FOR SELECT USING (TRUE);=======================================================
 -- 10. ROW-LEVEL SECURITY
 -- ============================================================================
 ALTER TABLE public.authors ENABLE ROW LEVEL SECURITY;

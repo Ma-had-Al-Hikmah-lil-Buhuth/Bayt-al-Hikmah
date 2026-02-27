@@ -47,7 +47,6 @@ export interface Book {
 	translator_id: number | null;
 	category_id: string;
 	language_code: string;
-	translation_of_id: number | null;
 	description: MultiLang;
 	pdf_url: string;
 	cover_image_url: string | null;
@@ -68,7 +67,7 @@ export interface BookWithRelations extends Book {
 	tags?: Tag[];
 }
 
-/** Book with translations in other languages */
+/** Book with translations in other languages (via book_translations junction) */
 export interface BookWithTranslations extends BookWithRelations {
 	translations: {
 		id: number;
@@ -76,6 +75,12 @@ export interface BookWithTranslations extends BookWithRelations {
 		slug: string;
 		language_code: string;
 	}[];
+}
+
+/** Row in the book_translations junction table */
+export interface BookTranslation {
+	book_a_id: number;
+	book_b_id: number;
 }
 
 export interface Tag {

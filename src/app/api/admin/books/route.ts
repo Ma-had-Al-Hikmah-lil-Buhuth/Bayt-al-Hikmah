@@ -37,7 +37,7 @@ export const POST = async (request: NextRequest) => {
 
 		// Optional new fields
 		const translatorId = formData.get("translator_id") as string | null;
-		const translationOfId = formData.get("translation_of_id") as string | null;
+		const translationIdsRaw = formData.get("translation_ids") as string | null;
 		const tagsRaw = formData.get("tags") as string | null;
 
 		// Upload PDF
@@ -104,7 +104,6 @@ export const POST = async (request: NextRequest) => {
 		if (authorId) insertPayload.author_id = Number(authorId);
 
 		if (translatorId) insertPayload.translator_id = Number(translatorId);
-		if (translationOfId) insertPayload.translation_of_id = Number(translationOfId);
 
 		// Insert book record
 		const { data: book, error: insertError } = await supabase
@@ -155,6 +154,46 @@ export const POST = async (request: NextRequest) => {
 				}
 			} catch {
 				// tag insertion is non-critical
+			}
+		}
+
+		// ── Link translations (many-to-many via book_translations) ──
+		if (translationIdsRaw) {
+			try {
+				const linkedIds: number[] = JSON.parse(translationIdsRaw);
+				if (linkedIds.length > 0) {
+					// 1. Collect the full group: all books already linked to any of the selected IDs
+					const { data: existingLinks } = await supabase
+						.from("book_translations")
+						.select("book_a_id, book_b_id")
+						.or(
+							linkedIds
+								.flatMap((id) => [`book_a_id.eq.${id}`, `book_b_id.eq.${id}`])
+								.join(",")
+						);
+
+					const groupIds = new Set(linkedIds);
+					for (const row of existingLinks ?? []) {
+						groupIds.add(row.book_a_id);
+						groupIds.add(row.book_b_id);
+					}
+
+					// 2. Build pairs: new book ↔ every member of the group
+					const pairs: { book_a_id: number; book_b_id: number }[] = [];
+					for (const otherId of groupIds) {
+						if (otherId === book.id) continue;
+						const [a, b] = otherId < book.id ? [otherId, book.id] : [book.id, otherId];
+						pairs.push({ book_a_id: a, book_b_id: b });
+					}
+
+					if (pairs.length > 0) {
+						await supabase
+							.from("book_translations")
+							.upsert(pairs, { onConflict: "book_a_id,book_b_id" });
+					}
+				}
+			} catch {
+				// translation linking is non-critical
 			}
 		}
 
