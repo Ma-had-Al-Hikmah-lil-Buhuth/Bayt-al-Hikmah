@@ -57,11 +57,8 @@ export default async function AuthorsPage() {
 									{t(author.name)}
 								</h3>
 								<p className="text-xs text-[var(--color-text-muted)] mt-1">
-									{author.death_date_hijri &&
-										`d. ${author.death_date_hijri}`}
-								</p>
-								<p className="text-sm text-[var(--color-text-muted)] mt-2 line-clamp-2">
-									{t(author.bio)}
+									{author.death_year &&
+										`d. ${author.death_year} AH`}
 								</p>
 								{author.books && (
 									<span className="text-xs text-[var(--color-text-muted)] mt-2 inline-flex items-center gap-1">

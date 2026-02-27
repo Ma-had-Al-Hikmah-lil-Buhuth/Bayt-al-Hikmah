@@ -1,17 +1,20 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createAdminSupabaseClient } from "@/lib/supabase/server";
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 /** GET /api/admin/authors/search?q=... — search authors by name */
 export const GET = async (request: NextRequest) => {
 	try {
 		const q = request.nextUrl.searchParams.get("q")?.trim() || "";
-		const supabase = await createServerSupabaseClient();
+		const limit = Math.min(30, Math.max(1, Number(request.nextUrl.searchParams.get("limit")) || 15));
+		const supabase = await createAdminSupabaseClient();
 
 		let query = supabase
 			.from("authors")
-			.select("id, name, bio, death_date_hijri")
-			.order("name")
-			.limit(15);
+			.select("id, name, bio, birth_year, death_year")
+			.order("name->en")
+			.limit(limit);
 
 		if (q) {
 			// Search across all language keys in the JSONB name field

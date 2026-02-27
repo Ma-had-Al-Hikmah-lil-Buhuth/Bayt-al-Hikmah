@@ -38,7 +38,7 @@ export const POST = async (request: NextRequest) => {
 		// Optional new fields
 		const translatorId = formData.get("translator_id") as string | null;
 		const translationOfId = formData.get("translation_of_id") as string | null;
-		const tagIdsRaw = formData.get("tag_ids") as string | null;
+		const tagsRaw = formData.get("tags") as string | null;
 
 		// Upload PDF
 		const pdfFile = formData.get("pdf") as File | null;
@@ -101,10 +101,10 @@ export const POST = async (request: NextRequest) => {
 			is_featured: isFeatured,
 		};
 
-		if (authorId) insertPayload.author_id = authorId;
+		if (authorId) insertPayload.author_id = Number(authorId);
 
-		if (translatorId) insertPayload.translator_id = translatorId;
-		if (translationOfId) insertPayload.translation_of_id = translationOfId;
+		if (translatorId) insertPayload.translator_id = Number(translatorId);
+		if (translationOfId) insertPayload.translation_of_id = Number(translationOfId);
 
 		// Insert book record
 		const { data: book, error: insertError } = await supabase
@@ -115,12 +115,39 @@ export const POST = async (request: NextRequest) => {
 
 		if (insertError) throw insertError;
 
-		// Insert tags into book_tags junction table
-		if (tagIdsRaw) {
+		// Resolve tags: create any that don't have IDs, then link all to book
+		if (tagsRaw) {
 			try {
-				const tagIds: string[] = JSON.parse(tagIdsRaw);
-				if (tagIds.length > 0) {
-					const bookTagRows = tagIds.map((tagId) => ({
+				const tags: { id?: number; name: string }[] = JSON.parse(tagsRaw);
+				const resolvedIds: number[] = [];
+
+				for (const tag of tags) {
+					if (tag.id) {
+						resolvedIds.push(tag.id);
+					} else if (tag.name?.trim()) {
+						// Create the tag on the fly
+						const tagSlug = slugify(tag.name.trim());
+						const { data: existing } = await supabase
+							.from("tags")
+							.select("id")
+							.eq("slug", tagSlug)
+							.single();
+
+						if (existing) {
+							resolvedIds.push(existing.id);
+						} else {
+							const { data: created } = await supabase
+								.from("tags")
+								.insert({ name: { en: tag.name.trim() }, slug: tagSlug })
+								.select("id")
+								.single();
+							if (created) resolvedIds.push(created.id);
+						}
+					}
+				}
+
+				if (resolvedIds.length > 0) {
+					const bookTagRows = resolvedIds.map((tagId) => ({
 						book_id: book.id,
 						tag_id: tagId,
 					}));

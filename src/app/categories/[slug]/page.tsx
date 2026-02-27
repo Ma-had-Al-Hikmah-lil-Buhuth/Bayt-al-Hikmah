@@ -2,13 +2,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { BookOpen, Eye, Download, ArrowLeft } from "lucide-react";
 import { getDictionary } from "@/dictionaries";
+import categoriesJson from "@/lib/categories.json";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { localePath, t, formatCount } from "@/lib/utils";
-import {
-	sampleCategories,
-	sampleBooks,
-	getSampleBooksByCategory,
-} from "@/lib/sampleData";
+import { getSampleBooksByCategory } from "@/lib/sampleData";
 
 interface CategoryDetailPageProps {
 	params: Promise<{ slug: string }>;
@@ -21,24 +18,15 @@ export default async function CategoryDetailPage({
 	const dict = await getDictionary();
 	const c = dict.common;
 
-	let category: any = null;
+	let category: any = categoriesJson.find((c: any) => c.slug === slug) ?? null;
 	let books: any[] = [];
 
 	try {
-		const supabase = await createServerSupabaseClient();
-
-		const { data: catData } = await supabase
-			.from("categories")
-			.select("*")
-			.eq("slug", slug)
-			.single();
-
-		category = catData;
-
 		if (category) {
+			const supabase = await createServerSupabaseClient();
 			const { data: booksData } = await supabase
 				.from("books")
-				.select("*, author:authors(*), category:categories(*)")
+				.select("*, author:authors(*)")
 				.eq("category_id", category.id)
 				.order("view_count", { ascending: false });
 
@@ -48,13 +36,9 @@ export default async function CategoryDetailPage({
 		// Supabase not configured
 	}
 
-	// Fallback to sample data
-	if (!category) {
-		const sampleCat = sampleCategories.find((sc) => sc.slug === slug);
-		if (sampleCat) {
-			category = sampleCat;
-			books = getSampleBooksByCategory(slug);
-		}
+	// Fallback to sample data for books
+	if (category && books.length === 0) {
+		books = getSampleBooksByCategory(slug);
 	}
 
 	if (!category) {
@@ -76,8 +60,8 @@ export default async function CategoryDetailPage({
 		);
 	}
 
-	const categoryName = t(category.name);
-	const categoryDesc = t(category.description);
+	const categoryName = category.name;
+	const categoryDesc = category.description;
 
 	return (
 		<div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -201,9 +185,9 @@ export default async function CategoryDetailPage({
 					{dict.home.browseCategories}
 				</h2>
 				<div className="flex flex-wrap gap-3">
-					{sampleCategories
-						.filter((sc) => sc.slug !== slug)
-						.map((sc) => (
+					{categoriesJson
+						.filter((sc: any) => sc.slug !== slug)
+						.map((sc: any) => (
 							<Link
 								key={sc.slug}
 								href={localePath(
@@ -211,7 +195,7 @@ export default async function CategoryDetailPage({
 								)}
 								className="rounded-full border border-[var(--color-border)] px-4 py-2 text-sm hover:bg-[var(--color-primary)] hover:text-white hover:border-[var(--color-primary)] transition-colors"
 							>
-								{t(sc.name)}
+								{sc.name}
 							</Link>
 						))}
 				</div>

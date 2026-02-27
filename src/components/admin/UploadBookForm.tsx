@@ -40,8 +40,8 @@ interface SearchablePersonProps {
 	label: string;
 	placeholder: string;
 	apiUrl: string;
-	value: { id: string; name: string } | null;
-	onChange: (val: { id: string; name: string } | null) => void;
+	value: { id: number; name: string } | null;
+	onChange: (val: { id: number; name: string } | null) => void;
 	required?: boolean;
 	showAddNew?: boolean;
 }
@@ -157,9 +157,9 @@ const SearchablePerson = ({
 						>
 							<UserPen className="h-3.5 w-3.5 text-[var(--color-text-muted)] shrink-0" />
 							<span className="font-medium">{t(item.name)}</span>
-							{item.death_date_hijri && (
+							{item.death_year && (
 								<span className="text-xs text-[var(--color-text-muted)] ml-auto">
-									d. {item.death_date_hijri}
+									d. {item.death_year} AH
 								</span>
 							)}
 						</button>
@@ -409,8 +409,8 @@ const SearchableCategory = ({
 // ─── Tag Input ──────────────────────────────────────────────────────────────
 
 interface TagInputProps {
-	tags: { id?: string; name: string }[];
-	onChange: (tags: { id?: string; name: string }[]) => void;
+	tags: { id?: number; name: string }[];
+	onChange: (tags: { id?: number; name: string }[]) => void;
 }
 
 const TagInput = ({ tags, onChange }: TagInputProps) => {
@@ -579,8 +579,8 @@ const TagInput = ({ tags, onChange }: TagInputProps) => {
 // ─── Translation Link Search ────────────────────────────────────────────────
 
 interface TranslationLinkProps {
-	value: { id: string; title: string; language_code: string } | null;
-	onChange: (val: { id: string; title: string; language_code: string } | null) => void;
+	value: { id: number; title: string; language_code: string } | null;
+	onChange: (val: { id: number; title: string; language_code: string } | null) => void;
 }
 
 const LANG_LABELS: Record<string, string> = {
@@ -756,11 +756,11 @@ export function UploadBookForm({ dict, categories }: UploadBookFormProps) {
 	const [coverPreview, setCoverPreview] = useState("");
 
 	// Controlled state for searchable fields
-	const [author, setAuthor] = useState<{ id: string; name: string } | null>(null);
-	const [translator, setTranslator] = useState<{ id: string; name: string } | null>(null);
-	const [tags, setTags] = useState<{ id?: string; name: string }[]>([]);
+	const [author, setAuthor] = useState<{ id: number; name: string } | null>(null);
+	const [translator, setTranslator] = useState<{ id: number; name: string } | null>(null);
+	const [tags, setTags] = useState<{ id?: number; name: string }[]>([]);
 	const [translationOf, setTranslationOf] = useState<{
-		id: string;
+		id: number;
 		title: string;
 		language_code: string;
 	} | null>(null);
@@ -811,22 +811,21 @@ export function UploadBookForm({ dict, categories }: UploadBookFormProps) {
 		const formData = new FormData(e.currentTarget);
 		if (isTranslation && author) {
 			// For Translation of the Qur'an, the primary person is the translator
-			formData.set("translator_id", author.id);
+			formData.set("translator_id", String(author.id));
 		} else if (isTafseer && author) {
 			// For Tafseer, the primary person is the mufassir (stored as author)
-			formData.set("author_id", author.id);
-			if (translator) formData.set("translator_id", translator.id);
+			formData.set("author_id", String(author.id));
+			if (translator) formData.set("translator_id", String(translator.id));
 		} else if (!isMushaf && author) {
-			formData.set("author_id", author.id);
-			if (translator) formData.set("translator_id", translator.id);
+			formData.set("author_id", String(author.id));
+			if (translator) formData.set("translator_id", String(translator.id));
 		}
 		formData.set("language_code", selectedLanguage);
 		formData.set("category_id", selectedCategory);
-		if (translationOf) formData.set("translation_of_id", translationOf.id);
+		if (translationOf) formData.set("translation_of_id", String(translationOf.id));
 
-		// Send tags as JSON
-		const tagIds = tags.filter((tg) => tg.id).map((tg) => tg.id);
-		formData.set("tag_ids", JSON.stringify(tagIds));
+		// Send tags as JSON (include names so server can create missing ones)
+		formData.set("tags", JSON.stringify(tags));
 
 		try {
 			const res = await fetch("/api/admin/books", {

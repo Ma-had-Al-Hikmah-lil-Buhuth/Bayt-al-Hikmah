@@ -14,6 +14,7 @@ import { notFound } from "next/navigation";
 import { LanguageBadge } from "@/components/books/LanguageBadge";
 import { PdfReaderWrapper } from "@/components/books/PdfReaderWrapper";
 import { getDictionary } from "@/dictionaries";
+import categories from "@/lib/categories.json";
 import { sampleBooks } from "@/lib/sampleData";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { formatCount, localePath, t } from "@/lib/utils";
@@ -46,7 +47,7 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
 
 		const { data } = await supabase
 			.from("books")
-			.select("*, author:authors(*), category:categories(*), translator:authors!books_translator_id_fkey(*)")
+			.select("*, author:authors(*), translator:authors!books_translator_id_fkey(*)")
 			.eq("slug", slug)
 			.single();
 
@@ -54,7 +55,7 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
 		book = data;
 
 		// Increment view count (fire-and-forget)
-		supabase.rpc("increment_view_count", { book_uuid: book.id }).then();
+		supabase.rpc("increment_view_count", { book_id_param: book.id }).then();
 
 		// Fetch translations — books that share the same original or are the original
 		const originalId = book.translation_of_id || book.id;
@@ -89,7 +90,7 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
 			relatedBooks = sampleBooks
 				.filter(
 					(b) =>
-						b.category?.slug === sampleBook.category?.slug &&
+						b.category_id === sampleBook.category_id &&
 						b.id !== sampleBook.id
 				)
 				.slice(0, 4);
@@ -118,7 +119,8 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
 
 	const title = t(book.title);
 	const authorName = t(book.author?.name);
-	const categoryName = t(book.category?.name);
+	const category = categories.find((c: any) => c.id === book.category_id);
+	const categoryName = category?.name ?? book.category_id;
 	const description = t(book.description);
 	const translatorName = book.translator ? t(book.translator.name) : null;
 
@@ -207,7 +209,7 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
 							<Tag className="h-4 w-4" />
 							<Link
 								href={localePath(
-									`/categories/${book.category?.slug}`
+									`/categories/${category?.slug ?? book.category_id}`
 								)}
 								className="hover:text-[var(--color-primary)]"
 							>
@@ -222,10 +224,10 @@ export default async function BookDetailPage({ params }: BookDetailPageProps) {
 								</span>
 							</div>
 						)}
-						{book.author?.death_date_hijri && (
+						{book.author?.death_year && (
 							<div className="flex items-center gap-3 text-[var(--color-text-muted)]">
 								<Calendar className="h-4 w-4" />
-								<span>{book.author.death_date_hijri}</span>
+								<span>d. {book.author.death_year} AH</span>
 							</div>
 						)}
 					</div>

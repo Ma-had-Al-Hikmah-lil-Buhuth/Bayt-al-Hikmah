@@ -19,7 +19,6 @@ export function ManageAuthorsClient({
 }: ManageAuthorsClientProps) {
 	const [authors, setAuthors] = useState(initialAuthors);
 	const [search, setSearch] = useState("");
-	const [filterEra, setFilterEra] = useState("");
 	const [showCreate, setShowCreate] = useState(false);
 	const [editTarget, setEditTarget] = useState<any>(null);
 	const [deleteTarget, setDeleteTarget] = useState<any>(null);
@@ -29,34 +28,25 @@ export function ManageAuthorsClient({
 
 	const filtered = authors.filter((author: any) => {
 		const name = t(author.name).toLowerCase();
-		const matchesSearch = !search || name.includes(search.toLowerCase());
-		const matchesEra = !filterEra || author.era === filterEra;
-		return matchesSearch && matchesEra;
+		return !search || name.includes(search.toLowerCase());
 	});
-
-	const eras = [...new Set(authors.map((a: any) => a.era).filter(Boolean))];
 
 	async function handleCreateOrEdit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault();
 		setSaving(true);
 
 		const form = new FormData(e.currentTarget);
-		const name: Record<string, string> = {};
-		const bio: Record<string, string> = {};
-		for (const lang of ["en", "ar", "bn", "ur"]) {
-			const nVal = form.get(`name_${lang}`) as string;
-			const bVal = form.get(`bio_${lang}`) as string;
-			if (nVal?.trim()) name[lang] = nVal.trim();
-			if (bVal?.trim()) bio[lang] = bVal.trim();
-		}
+		const nameEn = (form.get("name_en") as string)?.trim();
+		const bioEn = (form.get("bio_en") as string)?.trim();
+
+		const birthYear = form.get("birth_year") as string;
+		const deathYear = form.get("death_year") as string;
 
 		const payload = {
-			name,
-			bio,
-			era: (form.get("era") as string) || null,
-			birth_date_hijri: (form.get("birth_date_hijri") as string) || null,
-			death_date_hijri: (form.get("death_date_hijri") as string) || null,
-			photo_url: (form.get("photo_url") as string) || null,
+			name: nameEn ? { en: nameEn } : {},
+			bio: bioEn ? { en: bioEn } : {},
+			birth_year: birthYear ? parseInt(birthYear, 10) : null,
+			death_year: deathYear ? parseInt(deathYear, 10) : null,
 		};
 
 		try {
@@ -116,110 +106,56 @@ export function ManageAuthorsClient({
 	function AuthorForm({ author }: { author?: any }) {
 		return (
 			<form onSubmit={handleCreateOrEdit} className="space-y-4">
-				<fieldset className="space-y-3">
-					<legend className="text-sm font-semibold">
-						Name (Multilingual)
-					</legend>
-					<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-						{(["en", "ar", "bn", "ur"] as const).map((lang) => (
-							<div key={lang}>
-								<label className="text-xs text-[var(--color-text-muted)] uppercase">
-									{lang}
-								</label>
-								<input
-									name={`name_${lang}`}
-									defaultValue={author?.name?.[lang] || ""}
-									dir={
-										lang === "ar" || lang === "ur"
-											? "rtl"
-											: "ltr"
-									}
-									required={lang === "en"}
-									className="w-full mt-1 rounded-lg border border-[var(--color-border)] px-3 py-2 text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none"
-									placeholder={`Name in ${lang.toUpperCase()}`}
-								/>
-							</div>
-						))}
-					</div>
-				</fieldset>
+				<div>
+					<label className="text-sm font-semibold block mb-1">
+						Name <span className="text-red-400">*</span>
+					</label>
+					<input
+						name="name_en"
+						defaultValue={author?.name?.en || ""}
+						required
+						className="w-full rounded-lg border border-[var(--color-border)] px-3 py-2 text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none"
+						placeholder="Author name"
+					/>
+				</div>
 
-				<fieldset className="space-y-3">
-					<legend className="text-sm font-semibold">
-						Bio (Multilingual)
-					</legend>
-					<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-						{(["en", "ar", "bn", "ur"] as const).map((lang) => (
-							<div key={lang}>
-								<label className="text-xs text-[var(--color-text-muted)] uppercase">
-									{lang}
-								</label>
-								<textarea
-									name={`bio_${lang}`}
-									defaultValue={author?.bio?.[lang] || ""}
-									dir={
-										lang === "ar" || lang === "ur"
-											? "rtl"
-											: "ltr"
-									}
-									rows={2}
-									className="w-full mt-1 rounded-lg border border-[var(--color-border)] px-3 py-2 text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none resize-y"
-									placeholder={`Bio in ${lang.toUpperCase()}`}
-								/>
-							</div>
-						))}
-					</div>
-				</fieldset>
-
-				<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+				<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 					<div>
 						<label className="text-sm font-semibold block mb-1">
-							Era
-						</label>
-						<select
-							name="era"
-							defaultValue={author?.era || ""}
-							className="w-full rounded-lg border border-[var(--color-border)] px-3 py-2 text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none"
-						>
-							<option value="">Select era...</option>
-							<option value="Classical">Classical</option>
-							<option value="Medieval">Medieval</option>
-							<option value="Contemporary">Contemporary</option>
-						</select>
-					</div>
-					<div>
-						<label className="text-sm font-semibold block mb-1">
-							Birth (Hijri)
+							Birth Year (Hijri)
 						</label>
 						<input
-							name="birth_date_hijri"
-							defaultValue={author?.birth_date_hijri || ""}
+							name="birth_year"
+							type="number"
+							defaultValue={author?.birth_year || ""}
 							className="w-full rounded-lg border border-[var(--color-border)] px-3 py-2 text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none"
-							placeholder="e.g. 661 AH"
+							placeholder="e.g. 661"
 						/>
 					</div>
 					<div>
 						<label className="text-sm font-semibold block mb-1">
-							Death (Hijri)
+							Death Year (Hijri)
 						</label>
 						<input
-							name="death_date_hijri"
-							defaultValue={author?.death_date_hijri || ""}
+							name="death_year"
+							type="number"
+							defaultValue={author?.death_year || ""}
 							className="w-full rounded-lg border border-[var(--color-border)] px-3 py-2 text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none"
-							placeholder="e.g. 728 AH"
+							placeholder="e.g. 728"
 						/>
 					</div>
 				</div>
 
 				<div>
 					<label className="text-sm font-semibold block mb-1">
-						Photo URL
+						Bio
 					</label>
-					<input
-						name="photo_url"
-						defaultValue={author?.photo_url || ""}
-						type="url"
-						className="w-full rounded-lg border border-[var(--color-border)] px-3 py-2 text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none"
-						placeholder="https://..."
+					<textarea
+						name="bio_en"
+						defaultValue={author?.bio?.en || ""}
+						rows={3}
+						className="w-full rounded-lg border border-[var(--color-border)] px-3 py-2 text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none resize-y"
+						placeholder="Short biography of the author…"
 					/>
 				</div>
 
@@ -245,27 +181,25 @@ export function ManageAuthorsClient({
 	return (
 		<div className="px-4 py-8 sm:px-6 lg:px-8">
 			{/* Header */}
-			<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-				<div>
-					<h1 className="text-2xl font-bold flex items-center gap-2">
-						<Users className="h-6 w-6 text-[var(--color-primary)]" />
-						{a.manageAuthors}
-					</h1>
-					<p className="text-sm text-[var(--color-text-muted)] mt-1">
-						{filtered.length} of {authors.length} authors
-					</p>
-				</div>
+			<div className="mb-6">
+				<h1 className="text-2xl font-bold flex items-center gap-2">
+					<Users className="h-6 w-6 text-[var(--color-primary)]" />
+					{a.manageAuthors}
+				</h1>
+				<p className="text-sm text-[var(--color-text-muted)] mt-1">
+					{filtered.length} of {authors.length} authors
+				</p>
+			</div>
+
+			{/* Search + Add */}
+			<div className="flex items-center gap-3 mb-6">
 				<AdminButton
 					icon={<Plus className="h-4 w-4" />}
 					onClick={() => setShowCreate(true)}
 				>
 					Add Author
 				</AdminButton>
-			</div>
-
-			{/* Filters */}
-			<div className="flex flex-col sm:flex-row gap-3 mb-6">
-				<div className="relative flex-1">
+				<div className="relative flex-1 max-w-md">
 					<Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--color-text-muted)]" />
 					<input
 						type="text"
@@ -275,18 +209,6 @@ export function ManageAuthorsClient({
 						className="w-full ps-10 pe-4 py-2.5 rounded-xl border border-[var(--color-border)] text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none bg-[var(--color-surface)]"
 					/>
 				</div>
-				<select
-					value={filterEra}
-					onChange={(e) => setFilterEra(e.target.value)}
-					className="rounded-xl border border-[var(--color-border)] px-3 py-2.5 text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none bg-[var(--color-surface)]"
-				>
-					<option value="">All Eras</option>
-					{eras.map((era) => (
-						<option key={era} value={era}>
-							{era}
-						</option>
-					))}
-				</select>
 			</div>
 
 			{/* Authors Grid */}
@@ -302,37 +224,17 @@ export function ManageAuthorsClient({
 							className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 hover:shadow-md transition-shadow"
 						>
 							<div className="flex items-start gap-4">
-								{author.photo_url ? (
-									<img
-										src={author.photo_url}
-										alt=""
-										className="h-14 w-14 rounded-xl object-cover border border-[var(--color-border)]"
-									/>
-								) : (
-									<div className="h-14 w-14 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center shrink-0">
-										<Users className="h-6 w-6 text-[var(--color-primary)]" />
-									</div>
-								)}
+								<div className="h-14 w-14 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center shrink-0">
+									<Users className="h-6 w-6 text-[var(--color-primary)]" />
+								</div>
 								<div className="flex-1 min-w-0">
 									<h3 className="font-semibold truncate">
 										{t(author.name)}
 									</h3>
-									{author.era && (
-										<span className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs bg-[var(--color-border)] text-[var(--color-text-muted)]">
-											{author.era}
-										</span>
-									)}
-									{(author.birth_date_hijri ||
-										author.death_date_hijri) && (
+									{(author.birth_year || author.death_year) && (
 										<p className="text-xs text-[var(--color-text-muted)] mt-1 flex items-center gap-1">
 											<Calendar className="h-3 w-3" />
-											{author.birth_date_hijri || "?"} —{" "}
-											{author.death_date_hijri || "?"}
-										</p>
-									)}
-									{author.bio?.en && (
-										<p className="text-xs text-[var(--color-text-muted)] mt-2 line-clamp-2">
-											{author.bio.en}
+											{author.birth_year || "?"} — {author.death_year || "?"} AH
 										</p>
 									)}
 								</div>

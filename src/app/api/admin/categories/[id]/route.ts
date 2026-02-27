@@ -1,84 +1,17 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
 
-async function verifyAdmin(supabase: any) {
-	const {
-		data: { user },
-	} = await supabase.auth.getUser();
+/** Categories are managed via JSON file, not the database */
 
-	if (!user) return { error: "Unauthorized", status: 401 };
+export const PATCH = async () => {
+	return NextResponse.json(
+		{ error: "Categories are managed via the categories.json file" },
+		{ status: 405 }
+	);
+};
 
-	const { data: profile } = await supabase
-		.from("profiles")
-		.select("role")
-		.eq("id", user.id)
-		.single();
-
-	if (profile?.role !== "admin") return { error: "Forbidden", status: 403 };
-	return { user, profile };
-}
-
-/** PATCH /api/admin/categories/[id] */
-export async function PATCH(
-	request: NextRequest,
-	{ params }: { params: Promise<{ id: string }> }
-) {
-	try {
-		const { id } = await params;
-		const supabase = await createServerSupabaseClient();
-		const auth = await verifyAdmin(supabase);
-		if ("error" in auth) {
-			return NextResponse.json(
-				{ error: auth.error },
-				{ status: auth.status }
-			);
-		}
-
-		const body = await request.json();
-		const { data, error } = await supabase
-			.from("categories")
-			.update({ ...body, updated_at: new Date().toISOString() })
-			.eq("id", id)
-			.select()
-			.single();
-
-		if (error) throw error;
-		return NextResponse.json({ data });
-	} catch (err: any) {
-		return NextResponse.json(
-			{ error: err.message ?? "Update failed" },
-			{ status: 500 }
-		);
-	}
-}
-
-/** DELETE /api/admin/categories/[id] */
-export async function DELETE(
-	_request: NextRequest,
-	{ params }: { params: Promise<{ id: string }> }
-) {
-	try {
-		const { id } = await params;
-		const supabase = await createServerSupabaseClient();
-		const auth = await verifyAdmin(supabase);
-		if ("error" in auth) {
-			return NextResponse.json(
-				{ error: auth.error },
-				{ status: auth.status }
-			);
-		}
-
-		const { error } = await supabase
-			.from("categories")
-			.delete()
-			.eq("id", id);
-		if (error) throw error;
-
-		return NextResponse.json({ success: true });
-	} catch (err: any) {
-		return NextResponse.json(
-			{ error: err.message ?? "Delete failed" },
-			{ status: 500 }
-		);
-	}
-}
+export const DELETE = async () => {
+	return NextResponse.json(
+		{ error: "Categories are managed via the categories.json file" },
+		{ status: 405 }
+	);
+};

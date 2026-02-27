@@ -3,10 +3,10 @@ import { BooksGrid } from "@/components/books/BooksGrid";
 import { FilterSidebar } from "@/components/books/FilterSidebar";
 import { SearchBar } from "@/components/books/SearchBar";
 import { getDictionary } from "@/dictionaries";
+import categoriesJson from "@/lib/categories.json";
 import {
 	getSampleBooksByCategory,
 	sampleBooks,
-	sampleCategories,
 	searchSampleBooks,
 } from "@/lib/sampleData";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -35,26 +35,18 @@ export default async function BooksPage({
 	const limit = 20;
 
 	let books: any[] = [];
-	let categories: any[] = [];
+	let categories: any[] = categoriesJson;
 	let totalCount = 0;
 
 	try {
 		const supabase = await createServerSupabaseClient();
-
-		// Fetch categories for the filter sidebar
-		const catRes = await supabase
-			.from("categories")
-			.select("*")
-			.order("sort_order", { ascending: true });
-		categories = catRes.data ?? [];
 
 		if (query) {
 			// Use the search function
 			const { data } = await supabase.rpc("search_books", {
 				search_query: query,
 				lang_code: language || null,
-				cat_slug: category || null,
-				author_era: null,
+				cat_id: category || null,
 				result_limit: limit,
 				result_offset: (page - 1) * limit,
 			});
@@ -64,12 +56,12 @@ export default async function BooksPage({
 			// Regular listing with filters
 			let qb = supabase
 				.from("books")
-				.select("*, author:authors(*), category:categories(*)", {
+				.select("*, author:authors(*)", {
 					count: "exact",
 				});
 
 			if (category) {
-				qb = qb.eq("category.slug", category);
+				qb = qb.eq("category_id", category);
 			}
 			if (language) {
 				qb = qb.eq("language_code", language);
@@ -93,10 +85,6 @@ export default async function BooksPage({
 		// Supabase not configured
 	}
 
-	// Fallback to sample data when Supabase is empty / not configured
-	if (categories.length === 0) {
-		categories = sampleCategories;
-	}
 	if (books.length === 0) {
 		let fallbackBooks = [...sampleBooks];
 
@@ -105,7 +93,7 @@ export default async function BooksPage({
 		}
 		if (category) {
 			fallbackBooks = fallbackBooks.filter(
-				(b) => b.category?.slug === category
+				(b) => b.category_id === category
 			);
 		}
 		if (language) {

@@ -197,7 +197,7 @@ export function ManageBooksClient({
 					<option value="">All Categories</option>
 					{categories.map((cat: any) => (
 						<option key={cat.id} value={cat.id}>
-							{t(cat.name)}
+							{typeof cat.name === "string" ? cat.name : t(cat.name)}
 						</option>
 					))}
 				</select>
@@ -284,11 +284,7 @@ export function ManageBooksClient({
 										</td>
 										<td className="px-4 py-3 hidden lg:table-cell">
 											<span className="inline-block px-2 py-0.5 rounded-full text-xs bg-[var(--color-primary)]/10 text-[var(--color-primary)] font-medium">
-												{book.category
-													? t(
-															book.category.name
-														)
-													: "—"}
+												{categories.find((c: any) => c.id === book.category_id)?.name ?? book.category_id ?? "—"}
 											</span>
 										</td>
 										<td className="px-4 py-3 text-center hidden sm:table-cell text-[var(--color-text-muted)]">
@@ -445,7 +441,7 @@ export function ManageBooksClient({
 								>
 									{categories.map((cat: any) => (
 										<option key={cat.id} value={cat.id}>
-											{t(cat.name)}
+											{typeof cat.name === "string" ? cat.name : t(cat.name)}
 										</option>
 									))}
 								</select>

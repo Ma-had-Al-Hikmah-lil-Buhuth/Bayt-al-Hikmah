@@ -1,62 +1,42 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createAdminSupabaseClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/auth";
 
-async function verifyAdmin(supabase: any) {
-	const {
-		data: { user },
-	} = await supabase.auth.getUser();
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-	if (!user) return { error: "Unauthorized", status: 401 };
-
-	const { data: profile } = await supabase
-		.from("profiles")
-		.select("role")
-		.eq("id", user.id)
-		.single();
-
-	if (profile?.role !== "admin") return { error: "Forbidden", status: 403 };
-	return { user, profile };
-}
-
-/** PATCH /api/admin/users/[id] — update user role */
-export async function PATCH(
+/** PATCH /api/admin/users/[id] — update user (e.g. toggle admin) */
+export const PATCH = async (
 	request: NextRequest,
 	{ params }: { params: Promise<{ id: string }> }
-) {
+) => {
 	try {
-		const { id } = await params;
-		const supabase = await createServerSupabaseClient();
-		const auth = await verifyAdmin(supabase);
-		if ("error" in auth) {
-			return NextResponse.json(
-				{ error: auth.error },
-				{ status: auth.status }
-			);
+		const user = await getCurrentUser();
+		if (!user?.isAdmin) {
+			return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 		}
 
+		const { id } = await params;
 		const body = await request.json();
 
-		// Only allow updating certain fields
-		const allowedFields: Record<string, any> = {};
-		if (body.role && ["reader", "editor", "admin"].includes(body.role)) {
-			allowedFields.role = body.role;
-		}
-		if (body.display_name !== undefined) {
-			allowedFields.display_name = body.display_name;
-		}
+		const update: Record<string, any> = {
+			updated_at: new Date().toISOString(),
+		};
+		if (body.is_admin !== undefined) update.is_admin = body.is_admin;
+		if (body.name !== undefined) update.name = body.name;
 
-		if (Object.keys(allowedFields).length === 0) {
+		if (Object.keys(update).length <= 1) {
 			return NextResponse.json(
 				{ error: "No valid fields to update" },
 				{ status: 400 }
 			);
 		}
 
+		const supabase = await createAdminSupabaseClient();
 		const { data, error } = await supabase
-			.from("profiles")
-			.update({ ...allowedFields, updated_at: new Date().toISOString() })
-			.eq("id", id)
-			.select()
+			.from("users")
+			.update(update)
+			.eq("id", Number(id))
+			.select("id, email, name, is_admin, created_at")
 			.single();
 
 		if (error) throw error;
@@ -67,4 +47,4 @@ export async function PATCH(
 			{ status: 500 }
 		);
 	}
-}
+};

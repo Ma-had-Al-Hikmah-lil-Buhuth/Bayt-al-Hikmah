@@ -9,11 +9,11 @@ import {
 	Star,
 } from "lucide-react";
 import { getDictionary } from "@/dictionaries";
+import categoriesJson from "@/lib/categories.json";
 import { localePath, t } from "@/lib/utils";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import {
 	getSampleFeaturedBooks,
-	sampleCategories,
 	sampleAuthors,
 } from "@/lib/sampleData";
 
@@ -24,28 +24,23 @@ export default async function HomePage() {
 
 	// Fetch featured books, categories, authors from Supabase
 	let featuredBooks: any[] = [];
-	let categories: any[] = [];
+	let categories: any[] = categoriesJson;
 	let stats = { books: 0, downloads: 0, authors: 0 };
 
 	try {
 		const supabase = await createServerSupabaseClient();
 
-		const [booksRes, catRes, authorsRes] = await Promise.all([
+		const [booksRes, authorsRes] = await Promise.all([
 			supabase
 				.from("books")
-				.select("*, author:authors(*), category:categories(*)")
+				.select("*, author:authors(*)")
 				.eq("is_featured", true)
 				.order("view_count", { ascending: false })
 				.limit(8),
-			supabase
-				.from("categories")
-				.select("*")
-				.order("sort_order", { ascending: true }),
 			supabase.from("authors").select("id"),
 		]);
 
 		featuredBooks = booksRes.data ?? [];
-		categories = catRes.data ?? [];
 		stats = {
 			books: featuredBooks.length,
 			downloads: 0,
@@ -58,9 +53,6 @@ export default async function HomePage() {
 	// Fallback to sample data when Supabase is empty / not configured
 	if (featuredBooks.length === 0) {
 		featuredBooks = getSampleFeaturedBooks();
-	}
-	if (categories.length === 0) {
-		categories = sampleCategories;
 	}
 	if (stats.authors === 0) {
 		stats = {
@@ -148,7 +140,7 @@ export default async function HomePage() {
 						>
 							<BookOpen className="mx-auto h-8 w-8 mb-3 text-[var(--color-primary)] group-hover:scale-110 transition-transform" />
 							<h3 className="font-semibold text-sm">
-								{t(cat.name)}
+								{cat.name}
 							</h3>
 						</Link>
 					))}

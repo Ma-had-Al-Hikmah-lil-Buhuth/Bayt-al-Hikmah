@@ -2,7 +2,7 @@
 
 /** User account */
 export interface User {
-	id: string;
+	id: number;
 	name: string;
 	email: string;
 	password: string;
@@ -22,46 +22,32 @@ export interface MultiLang {
 // ─── Row types ──────────────────────────────────────────────────────────────
 
 export interface Language {
-	id: string;
 	code: string;
-	name: MultiLang;
+	name: string;
 	direction: "ltr" | "rtl";
 	is_active: boolean;
 	created_at: string;
 }
 
-export interface Category {
-	id: string;
-	name: MultiLang;
-	slug: string;
-	description: MultiLang;
-	icon_url: string | null;
-	sort_order: number;
-	parent_id: string | null;
-	created_at: string;
-	updated_at: string;
-}
-
 export interface Author {
-	id: string;
+	id: number;
 	name: MultiLang;
 	bio: MultiLang;
-	birth_date_hijri: string | null;
-	death_date_hijri: string | null;
-	photo_url: string | null;
+	birth_year: number | null;
+	death_year: number | null;
 	created_at: string;
 	updated_at: string;
 }
 
 export interface Book {
-	id: string;
+	id: number;
 	title: MultiLang;
 	slug: string;
-	author_id: string;
-	translator_id: string | null;
+	author_id: number | null;
+	translator_id: number | null;
 	category_id: string;
 	language_code: string;
-	translation_of_id: string | null;
+	translation_of_id: number | null;
 	description: MultiLang;
 	pdf_url: string;
 	cover_image_url: string | null;
@@ -77,16 +63,15 @@ export interface Book {
 
 /** Book with joined author & category rows (common query shape) */
 export interface BookWithRelations extends Book {
-	author: Author;
+	author: Author | null;
 	translator?: Author | null;
-	category: Category;
 	tags?: Tag[];
 }
 
 /** Book with translations in other languages */
 export interface BookWithTranslations extends BookWithRelations {
 	translations: {
-		id: string;
+		id: number;
 		title: MultiLang;
 		slug: string;
 		language_code: string;
@@ -94,66 +79,37 @@ export interface BookWithTranslations extends BookWithRelations {
 }
 
 export interface Tag {
-	id: string;
+	id: number;
 	name: MultiLang;
 	slug: string;
 }
 
-export interface Profile {
-	id: string;
-	display_name: string | null;
-	avatar_url: string | null;
-	preferred_lang: string;
-	role: "reader" | "editor" | "admin";
-	created_at: string;
-	updated_at: string;
-}
-
 export interface Bookmark {
-	id: string;
-	user_id: string;
-	book_id: string;
+	id: number;
+	user_id: number;
+	book_id: number;
 	page_number: number;
 	label: string | null;
 	created_at: string;
 }
 
-export interface ReadingProgress {
-	id: string;
-	user_id: string;
-	book_id: string;
-	current_page: number;
-	total_pages: number | null;
-	last_read_at: string;
-}
-
 export interface DownloadLog {
-	id: string;
-	book_id: string;
-	user_id: string | null;
+	id: number;
+	book_id: number;
+	user_id: number | null;
 	ip_address: string | null;
 	user_agent: string | null;
-	created_at: string;
-}
-
-export interface Collection {
-	id: string;
-	title: MultiLang;
-	description: MultiLang;
-	cover_url: string | null;
-	is_public: boolean;
-	created_by: string | null;
 	created_at: string;
 }
 
 // ─── Search ─────────────────────────────────────────────────────────────────
 
 export interface SearchResult {
-	id: string;
+	id: number;
 	title: MultiLang;
 	slug: string;
 	author_name: MultiLang;
-	category_name: MultiLang;
+	category_id: string;
 	cover_image_url: string | null;
 	language_code: string;
 	view_count: number;
@@ -167,8 +123,6 @@ export interface SearchFilters {
 	page?: number;
 	limit?: number;
 }
-
-// ─── Locale ─────────────────────────────────────────────────────────────────
 
 // ─── Locale (English only for now — expand later) ──────────────────────────
 

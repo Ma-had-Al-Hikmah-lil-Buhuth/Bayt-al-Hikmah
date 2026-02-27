@@ -10,6 +10,7 @@ import {
 	Download,
 } from "lucide-react";
 import { getDictionary } from "@/dictionaries";
+import { getCurrentUser } from "@/lib/auth";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { localePath, formatCount } from "@/lib/utils";
 
@@ -27,28 +28,18 @@ export default async function AdminDashboard() {
 	};
 
 	try {
-		const supabase = await createServerSupabaseClient();
-		const {
-			data: { user },
-		} = await supabase.auth.getUser();
-
+		const user = await getCurrentUser();
 		if (!user) {
 			redirect(localePath("/auth/login"));
 		}
-
-		const { data: profile } = await supabase
-			.from("profiles")
-			.select("role")
-			.eq("id", user.id)
-			.single();
-
-		if (profile?.role !== "admin") {
+		if (!user.isAdmin) {
 			redirect(localePath("/"));
 		}
 
 		isAdmin = true;
 
 		// Fetch stats
+		const supabase = await createServerSupabaseClient();
 		const [booksRes, authorsRes] = await Promise.all([
 			supabase.from("books").select("view_count, download_count"),
 			supabase.from("authors").select("id"),

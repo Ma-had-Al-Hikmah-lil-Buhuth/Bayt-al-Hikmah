@@ -26,7 +26,7 @@ export default async function AuthorDetailPage({
 		const { data: authorData } = await supabase
 			.from("authors")
 			.select("*")
-			.eq("id", id)
+			.eq("id", Number(id))
 			.single();
 
 		author = authorData;
@@ -34,8 +34,8 @@ export default async function AuthorDetailPage({
 		if (author) {
 			const { data: booksData } = await supabase
 				.from("books")
-				.select("*, category:categories(*)")
-				.eq("author_id", id)
+				.select("*")
+				.eq("author_id", Number(id))
 				.order("view_count", { ascending: false });
 
 			books = booksData ?? [];
@@ -46,10 +46,11 @@ export default async function AuthorDetailPage({
 
 	// Fallback to sample data
 	if (!author) {
-		const sampleAuthor = sampleAuthors.find((a) => a.id === id);
+		const numId = Number(id);
+		const sampleAuthor = sampleAuthors.find((a) => a.id === numId);
 		if (sampleAuthor) {
 			author = sampleAuthor;
-			books = sampleBooks.filter((b) => b.author_id === id);
+			books = sampleBooks.filter((b) => b.author_id === numId);
 		}
 	}
 
@@ -71,7 +72,6 @@ export default async function AuthorDetailPage({
 	}
 
 	const name = t(author.name);
-	const bio = t(author.bio);
 
 	return (
 		<div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -86,36 +86,26 @@ export default async function AuthorDetailPage({
 				</Link>
 
 				<div className="flex items-start gap-6">
-					{author.photo_url ? (
-						<Image
-							src={author.photo_url}
-							alt={name}
-							width={120}
-							height={120}
-							className="rounded-2xl object-cover"
-						/>
-					) : (
-						<div className="w-[120px] h-[120px] rounded-2xl bg-[var(--color-primary)]/10 flex items-center justify-center">
-							<span className="text-4xl font-bold text-[var(--color-primary)]">
-								{name.charAt(0)}
-							</span>
-						</div>
-					)}
+					<div className="w-[120px] h-[120px] rounded-2xl bg-[var(--color-primary)]/10 flex items-center justify-center">
+						<span className="text-4xl font-bold text-[var(--color-primary)]">
+							{name.charAt(0)}
+						</span>
+					</div>
 					<div>
 						<h1 className="text-3xl font-bold">{name}</h1>
 						<div className="flex items-center gap-4 mt-2 text-sm text-[var(--color-text-muted)]">
-							{author.death_date_hijri && (
+							{author.death_year && (
 								<span className="flex items-center gap-1">
 									<Calendar className="h-4 w-4" />
-									d. {author.death_date_hijri}
+									d. {author.death_year} AH
+								</span>
+							)}
+							{author.birth_year && (
+								<span className="flex items-center gap-1">
+									b. {author.birth_year} AH
 								</span>
 							)}
 						</div>
-						{bio && (
-							<p className="mt-4 text-[var(--color-text-muted)] max-w-2xl leading-relaxed">
-								{bio}
-							</p>
-						)}
 					</div>
 				</div>
 			</div>

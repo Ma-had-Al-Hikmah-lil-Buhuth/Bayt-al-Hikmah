@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 /** GET /api/books — list books with optional filters */
 export async function GET(request: NextRequest) {
 	const { searchParams } = new URL(request.url);
@@ -17,8 +19,7 @@ export async function GET(request: NextRequest) {
 			const { data, error } = await supabase.rpc("search_books", {
 				search_query: query,
 				lang_code: language || null,
-				cat_slug: category || null,
-				author_era: null,
+				cat_id: category || null,
 				result_limit: limit,
 				result_offset: (page - 1) * limit,
 			});
@@ -29,11 +30,11 @@ export async function GET(request: NextRequest) {
 
 		let qb = supabase
 			.from("books")
-			.select("*, author:authors(*), category:categories(*)", {
+			.select("*, author:authors(*)", {
 				count: "exact",
 			});
 
-		if (category) qb = qb.eq("category.slug", category);
+		if (category) qb = qb.eq("category_id", category);
 		if (language) qb = qb.eq("language_code", language);
 
 		qb = qb

@@ -91,7 +91,7 @@ export function FilterSidebar({
 									: "hover:bg-[var(--color-border)]"
 							)}
 						>
-							{t(cat.name)}
+							{typeof cat.name === "string" ? cat.name : t(cat.name)}
 						</Link>
 					))}
 				</div>

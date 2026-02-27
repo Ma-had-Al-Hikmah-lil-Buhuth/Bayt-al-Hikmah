@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createServerSupabaseClient, createAdminSupabaseClient } from "@/lib/supabase/server";
 import { slugify } from "@/lib/utils";
 
 /** GET /api/admin/tags?q=... — search/list tags */
@@ -45,7 +45,7 @@ export const POST = async (request: NextRequest) => {
 			);
 		}
 
-		const supabase = await createServerSupabaseClient();
+		const supabase = await createAdminSupabaseClient();
 		const slug = slugify(name);
 
 		// Check if tag already exists

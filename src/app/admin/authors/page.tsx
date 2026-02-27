@@ -1,6 +1,8 @@
 import { getDictionary } from "@/dictionaries";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createAdminSupabaseClient } from "@/lib/supabase/server";
 import { ManageAuthorsClient } from "@/components/admin/ManageAuthorsClient";
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 export default async function ManageAuthorsPage() {
 	const dict = await getDictionary();
@@ -8,10 +10,10 @@ export default async function ManageAuthorsPage() {
 	let authors: any[] = [];
 
 	try {
-		const supabase = await createServerSupabaseClient();
+		const supabase = await createAdminSupabaseClient();
 		const { data } = await supabase
 			.from("authors")
-			.select("*")
+			.select("id, name, bio, birth_year, death_year, created_at")
 			.order("created_at", { ascending: false });
 		authors = data ?? [];
 	} catch {

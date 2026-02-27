@@ -4,15 +4,12 @@ import { useState } from "react";
 import {
 	Search,
 	UserCog,
-	Shield,
-	ShieldCheck,
 	ShieldAlert,
+	Shield,
 	User,
 	Mail,
-	Calendar,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { AdminButton } from "./AdminButton";
 import { ConfirmDialog } from "./ConfirmDialog";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -21,71 +18,46 @@ interface ManageUsersClientProps {
 	initialUsers: any[];
 }
 
-const ROLE_CONFIG: Record<string, { label: string; icon: any; color: string }> =
-	{
-		admin: {
-			label: "Admin",
-			icon: ShieldAlert,
-			color: "text-red-600 bg-red-50",
-		},
-		editor: {
-			label: "Editor",
-			icon: ShieldCheck,
-			color: "text-blue-600 bg-blue-50",
-		},
-		reader: {
-			label: "Reader",
-			icon: Shield,
-			color: "text-green-600 bg-green-50",
-		},
-	};
-
 export function ManageUsersClient({
 	dict,
 	initialUsers,
 }: ManageUsersClientProps) {
 	const [users, setUsers] = useState(initialUsers);
 	const [search, setSearch] = useState("");
-	const [filterRole, setFilterRole] = useState("");
-	const [roleChangeTarget, setRoleChangeTarget] = useState<{
-		user: any;
-		newRole: string;
-	} | null>(null);
+	const [filterAdmin, setFilterAdmin] = useState<"all" | "admin" | "user">(
+		"all"
+	);
+	const [toggleTarget, setToggleTarget] = useState<any>(null);
 	const [saving, setSaving] = useState(false);
 	const a = dict.admin;
 
 	const filtered = users.filter((user: any) => {
-		const name = (user.display_name || "").toLowerCase();
+		const name = (user.name || user.email || "").toLowerCase();
 		const matchesSearch = !search || name.includes(search.toLowerCase());
-		const matchesRole = !filterRole || user.role === filterRole;
-		return matchesSearch && matchesRole;
+		const matchesFilter =
+			filterAdmin === "all" ||
+			(filterAdmin === "admin" && user.is_admin) ||
+			(filterAdmin === "user" && !user.is_admin);
+		return matchesSearch && matchesFilter;
 	});
 
-	const roleCounts = users.reduce(
-		(acc: Record<string, number>, u: any) => {
-			acc[u.role] = (acc[u.role] || 0) + 1;
-			return acc;
-		},
-		{} as Record<string, number>
-	);
+	const adminCount = users.filter((u: any) => u.is_admin).length;
+	const userCount = users.length - adminCount;
 
-	async function handleRoleChange() {
-		if (!roleChangeTarget) return;
+	async function handleToggleAdmin() {
+		if (!toggleTarget) return;
 		setSaving(true);
 		try {
-			const res = await fetch(
-				`/api/admin/users/${roleChangeTarget.user.id}`,
-				{
-					method: "PATCH",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ role: roleChangeTarget.newRole }),
-				}
-			);
+			const res = await fetch(`/api/admin/users/${toggleTarget.id}`, {
+				method: "PATCH",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ is_admin: !toggleTarget.is_admin }),
+			});
 			if (res.ok) {
 				setUsers((prev: any[]) =>
 					prev.map((u: any) =>
-						u.id === roleChangeTarget.user.id
-							? { ...u, role: roleChangeTarget.newRole }
+						u.id === toggleTarget.id
+							? { ...u, is_admin: !toggleTarget.is_admin }
 							: u
 					)
 				);
@@ -94,7 +66,7 @@ export function ManageUsersClient({
 			// Error
 		} finally {
 			setSaving(false);
-			setRoleChangeTarget(null);
+			setToggleTarget(null);
 		}
 	}
 
@@ -111,45 +83,58 @@ export function ManageUsersClient({
 				</p>
 			</div>
 
-			{/* Role Stats */}
-			<div className="grid grid-cols-3 gap-4 mb-6">
-				{(["admin", "editor", "reader"] as const).map((role) => {
-					const config = ROLE_CONFIG[role];
-					const Icon = config.icon;
-					return (
-						<button
-							key={role}
-							onClick={() =>
-								setFilterRole(filterRole === role ? "" : role)
-							}
-							className={cn(
-								"rounded-xl border p-4 text-start transition-all",
-								filterRole === role
-									? "border-[var(--color-primary)] shadow-md"
-									: "border-[var(--color-border)] hover:border-[var(--color-primary)]/50"
-							)}
-						>
-							<div className="flex items-center gap-3">
-								<div
-									className={cn(
-										"rounded-lg p-2",
-										config.color
-									)}
-								>
-									<Icon className="h-4 w-4" />
-								</div>
-								<div>
-									<p className="text-xl font-bold">
-										{roleCounts[role] || 0}
-									</p>
-									<p className="text-xs text-[var(--color-text-muted)]">
-										{config.label}s
-									</p>
-								</div>
-							</div>
-						</button>
-					);
-				})}
+			{/* Stats */}
+			<div className="grid grid-cols-2 gap-4 mb-6">
+				<button
+					onClick={() =>
+						setFilterAdmin(
+							filterAdmin === "admin" ? "all" : "admin"
+						)
+					}
+					className={cn(
+						"rounded-xl border p-4 text-start transition-all",
+						filterAdmin === "admin"
+							? "border-[var(--color-primary)] shadow-md"
+							: "border-[var(--color-border)] hover:border-[var(--color-primary)]/50"
+					)}
+				>
+					<div className="flex items-center gap-3">
+						<div className="rounded-lg p-2 text-red-600 bg-red-50">
+							<ShieldAlert className="h-4 w-4" />
+						</div>
+						<div>
+							<p className="text-xl font-bold">{adminCount}</p>
+							<p className="text-xs text-[var(--color-text-muted)]">
+								Admins
+							</p>
+						</div>
+					</div>
+				</button>
+				<button
+					onClick={() =>
+						setFilterAdmin(
+							filterAdmin === "user" ? "all" : "user"
+						)
+					}
+					className={cn(
+						"rounded-xl border p-4 text-start transition-all",
+						filterAdmin === "user"
+							? "border-[var(--color-primary)] shadow-md"
+							: "border-[var(--color-border)] hover:border-[var(--color-primary)]/50"
+					)}
+				>
+					<div className="flex items-center gap-3">
+						<div className="rounded-lg p-2 text-green-600 bg-green-50">
+							<Shield className="h-4 w-4" />
+						</div>
+						<div>
+							<p className="text-xl font-bold">{userCount}</p>
+							<p className="text-xs text-[var(--color-text-muted)]">
+								Users
+							</p>
+						</div>
+					</div>
+				</button>
 			</div>
 
 			{/* Search */}
@@ -173,11 +158,8 @@ export function ManageUsersClient({
 								<th className="text-start px-4 py-3 font-semibold">
 									User
 								</th>
-								<th className="text-start px-4 py-3 font-semibold hidden sm:table-cell">
-									Language
-								</th>
 								<th className="text-start px-4 py-3 font-semibold">
-									Role
+									Status
 								</th>
 								<th className="text-start px-4 py-3 font-semibold hidden md:table-cell">
 									Joined
@@ -191,122 +173,96 @@ export function ManageUsersClient({
 							{filtered.length === 0 ? (
 								<tr>
 									<td
-										colSpan={5}
+										colSpan={4}
 										className="px-4 py-12 text-center text-[var(--color-text-muted)]"
 									>
 										No users found.
 									</td>
 								</tr>
 							) : (
-								filtered.map((user: any) => {
-									const roleConfig =
-										ROLE_CONFIG[user.role] ||
-										ROLE_CONFIG.reader;
-									const RoleIcon = roleConfig.icon;
-									return (
-										<tr
-											key={user.id}
-											className="hover:bg-[var(--color-bg)] transition-colors"
-										>
-											<td className="px-4 py-3">
-												<div className="flex items-center gap-3">
-													{user.avatar_url ? (
-														<img
-															src={
-																user.avatar_url
-															}
-															alt=""
-															className="h-9 w-9 rounded-full object-cover border border-[var(--color-border)]"
-														/>
-													) : (
-														<div className="h-9 w-9 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center">
-															<User className="h-4 w-4 text-[var(--color-primary)]" />
-														</div>
-													)}
-													<div className="min-w-0">
-														<p className="font-medium truncate">
-															{user.display_name ||
-																"Unnamed User"}
-														</p>
-														<p className="text-xs text-[var(--color-text-muted)] truncate">
-															{user.id.slice(
-																0,
-																8
-															)}
-															...
-														</p>
-													</div>
+								filtered.map((user: any) => (
+									<tr
+										key={user.id}
+										className="hover:bg-[var(--color-bg)] transition-colors"
+									>
+										<td className="px-4 py-3">
+											<div className="flex items-center gap-3">
+												<div className="h-9 w-9 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center">
+													<User className="h-4 w-4 text-[var(--color-primary)]" />
 												</div>
-											</td>
-											<td className="px-4 py-3 hidden sm:table-cell text-[var(--color-text-muted)]">
-												<span className="uppercase text-xs font-medium">
-													{user.preferred_lang ||
-														"en"}
+												<div className="min-w-0">
+													<p className="font-medium truncate">
+														{user.name ||
+															"Unnamed User"}
+													</p>
+													<p className="text-xs text-[var(--color-text-muted)] truncate flex items-center gap-1">
+														<Mail className="h-3 w-3" />
+														{user.email}
+													</p>
+												</div>
+											</div>
+										</td>
+										<td className="px-4 py-3">
+											{user.is_admin ? (
+												<span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium text-red-600 bg-red-50">
+													<ShieldAlert className="h-3 w-3" />
+													Admin
 												</span>
-											</td>
-											<td className="px-4 py-3">
-												<span
+											) : (
+												<span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium text-green-600 bg-green-50">
+													<Shield className="h-3 w-3" />
+													User
+												</span>
+											)}
+										</td>
+										<td className="px-4 py-3 hidden md:table-cell text-[var(--color-text-muted)] text-xs">
+											{new Date(
+												user.created_at
+											).toLocaleDateString()}
+										</td>
+										<td className="px-4 py-3">
+											<div className="flex justify-end">
+												<button
+													onClick={() =>
+														setToggleTarget(user)
+													}
 													className={cn(
-														"inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium",
-														roleConfig.color
+														"rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors",
+														user.is_admin
+															? "border-red-200 text-red-600 hover:bg-red-50"
+															: "border-blue-200 text-blue-600 hover:bg-blue-50"
 													)}
 												>
-													<RoleIcon className="h-3 w-3" />
-													{roleConfig.label}
-												</span>
-											</td>
-											<td className="px-4 py-3 hidden md:table-cell text-[var(--color-text-muted)] text-xs">
-												{new Date(
-													user.created_at
-												).toLocaleDateString()}
-											</td>
-											<td className="px-4 py-3">
-												<div className="flex justify-end">
-													<select
-														value={user.role}
-														onChange={(e) =>
-															setRoleChangeTarget(
-																{
-																	user,
-																	newRole:
-																		e.target
-																			.value,
-																}
-															)
-														}
-														className="rounded-lg border border-[var(--color-border)] px-2 py-1 text-xs focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none bg-[var(--color-surface)]"
-													>
-														<option value="reader">
-															Reader
-														</option>
-														<option value="editor">
-															Editor
-														</option>
-														<option value="admin">
-															Admin
-														</option>
-													</select>
-												</div>
-											</td>
-										</tr>
-									);
-								})
+													{user.is_admin
+														? "Remove Admin"
+														: "Make Admin"}
+												</button>
+											</div>
+										</td>
+									</tr>
+								))
 							)}
 						</tbody>
 					</table>
 				</div>
 			</div>
 
-			{/* Role Change Confirm */}
+			{/* Toggle Admin Confirm */}
 			<ConfirmDialog
-				open={!!roleChangeTarget}
-				title="Change User Role"
-				message={`Change "${roleChangeTarget?.user?.display_name || "this user"}" role to ${roleChangeTarget?.newRole || ""}?`}
-				confirmLabel="Change Role"
-				variant="primary"
+				open={!!toggleTarget}
+				title={
+					toggleTarget?.is_admin
+						? "Remove Admin Access"
+						: "Grant Admin Access"
+				}
+				message={`${toggleTarget?.is_admin ? "Remove admin privileges from" : "Grant admin privileges to"} "${toggleTarget?.name || toggleTarget?.email || "this user"}"?`}
+				confirmLabel={
+					toggleTarget?.is_admin ? "Remove Admin" : "Make Admin"
+				}
+				variant={toggleTarget?.is_admin ? "danger" : "primary"}
 				loading={saving}
-				onConfirm={handleRoleChange}
-				onCancel={() => setRoleChangeTarget(null)}
+				onConfirm={handleToggleAdmin}
+				onCancel={() => setToggleTarget(null)}
 			/>
 		</div>
 	);
