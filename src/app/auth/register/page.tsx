@@ -4,10 +4,9 @@ import { BookOpen, Loader2, Lock, Mail, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { toast } from "sonner";
 import { localePath } from "@/lib/utils";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 export default function RegisterPage() {
 	const router = useRouter();
 	const [name, setName] = useState("");
@@ -15,53 +14,36 @@ export default function RegisterPage() {
 	const [password, setPassword] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState("");
-	const [success, setSuccess] = useState(false);
 
-	async function handleRegister(e: React.FormEvent) {
+	const handleRegister = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setIsLoading(true);
 		setError("");
 
 		try {
-			const supabase = createClient();
-			const { error } = await supabase.auth.signUp({
-				email,
-				password,
-				options: {
-					data: { display_name: name },
-				},
+			const res = await fetch("/api/auth?action=signup", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ name, email, password }),
 			});
 
-			if (error) throw error;
-			setSuccess(true);
-		} catch (err: any) {
-			setError(err.message);
+			const data = await res.json();
+
+			if (!res.ok) {
+				throw new Error(data.error || "Registration failed.");
+			}
+
+			toast.success("Account created successfully!");
+			router.push("/");
+			router.refresh();
+		} catch (err: unknown) {
+			const message =
+				err instanceof Error ? err.message : "Something went wrong.";
+			setError(message);
 		} finally {
 			setIsLoading(false);
 		}
-	}
-
-	if (success) {
-		return (
-			<div className="min-h-[calc(100vh-8rem)] flex items-center justify-center px-4">
-				<div className="text-center max-w-md space-y-4">
-					<BookOpen className="mx-auto h-12 w-12 text-[var(--color-primary)]" />
-					<h1 className="text-2xl font-bold">Check Your Email</h1>
-					<p className="text-[var(--color-text-muted)]">
-						We&apos;ve sent a confirmation link to{" "}
-						<strong>{email}</strong>. Please verify your email to
-						complete registration.
-					</p>
-					<Link
-						href={localePath("/auth/login")}
-						className="inline-block text-[var(--color-primary)] hover:underline font-medium"
-					>
-						Go to Login
-					</Link>
-				</div>
-			</div>
-		);
-	}
+	};
 
 	return (
 		<div className="min-h-[calc(100vh-8rem)] flex items-center justify-center px-4">
@@ -72,12 +54,6 @@ export default function RegisterPage() {
 					<p className="mt-2 text-sm text-[var(--color-text-muted)]">
 						Join the Islamic Library to save bookmarks and track
 						your reading.
-					</p>
-				</div>
-
-				<div className="text-center">
-					<p className="mt-2 text-sm text-[var(--color-text-muted)]">
-						This feature is not yet implemented.
 					</p>
 				</div>
 

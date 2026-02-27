@@ -1,5 +1,16 @@
 // ─── Database Types (mirrors supabase/schema.sql) ───────────────────────────
 
+/** User account */
+export interface User {
+	id: string;
+	name: string;
+	email: string;
+	password: string;
+	isAdmin: boolean;
+	created_at: string;
+	updated_at: string;
+}
+
 /** JSONB multilingual field — every supported locale key is optional */
 export interface MultiLang {
 	en?: string;

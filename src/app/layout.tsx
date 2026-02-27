@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Toaster } from "sonner";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { getDictionary } from "@/dictionaries";
@@ -32,6 +33,7 @@ export default async function RootLayout({
 				/>
 			</head>
 			<body className="min-h-screen flex flex-col antialiased">
+				<Toaster position="top-center" richColors closeButton />
 				<Header dict={dict} />
 				<main className="flex-1">{children}</main>
 				<Footer dict={dict} />

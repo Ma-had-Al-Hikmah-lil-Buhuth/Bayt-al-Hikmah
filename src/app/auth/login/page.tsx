@@ -2,55 +2,66 @@
 
 import { BookOpen, Loader2, Lock, Mail } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { localePath } from "@/lib/utils";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 export default function LoginPage() {
 	const router = useRouter();
+	const searchParams = useSearchParams();
+	const redirectTo = searchParams.get("redirect") || "/";
+	const unauthorized = searchParams.get("unauthorized");
+
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState("");
 
-	async function handleLogin(e: React.FormEvent) {
+	useEffect(() => {
+		if (unauthorized === "true") {
+			toast.error("You are not authorized. Please contact the site owner.");
+		}
+	}, [unauthorized]);
+
+	const handleLogin = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setIsLoading(true);
 		setError("");
 
 		try {
-			const supabase = createClient();
-			const { error } = await supabase.auth.signInWithPassword({
-				email,
-				password,
+			const res = await fetch("/api/auth?action=login", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ email, password }),
 			});
 
-			if (error) throw error;
-			router.push(localePath("/"));
+			const data = await res.json();
+
+			if (!res.ok) {
+				throw new Error(data.error || "Login failed.");
+			}
+
+			toast.success("Logged in successfully!");
+			router.push(redirectTo);
 			router.refresh();
-		} catch (err: any) {
-			setError(err.message);
+		} catch (err: unknown) {
+			const message =
+				err instanceof Error ? err.message : "Something went wrong.";
+			setError(message);
 		} finally {
 			setIsLoading(false);
 		}
-	}
+	};
 
 	return (
 		<div className="min-h-[calc(100vh-8rem)] flex items-center justify-center px-4">
 			<div className="w-full max-w-md space-y-8">
 				<div className="text-center">
 					<BookOpen className="mx-auto h-12 w-12 text-[var(--color-primary)]" />
-					<h1 className="mt-4 text-2xl font-bold">Sign In</h1>
+					<h1 className="mt-4 text-2xl font-bold">Welcome Back</h1>
 					<p className="mt-2 text-sm text-[var(--color-text-muted)]">
-						Access your reading progress, bookmarks, and more.
-					</p>
-				</div>
-
-				<div className="text-center">
-					<p className="mt-2 text-sm text-[var(--color-text-muted)]">
-						This feature is not yet implemented.
+						Sign in to access your account and the Islamic Library.
 					</p>
 				</div>
 
@@ -89,6 +100,7 @@ export default function LoginPage() {
 								value={password}
 								onChange={(e) => setPassword(e.target.value)}
 								required
+								minLength={6}
 								className="w-full rounded-lg border border-[var(--color-border)] ps-10 pe-4 py-2.5 text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none"
 								placeholder="••••••••"
 							/>
@@ -113,7 +125,7 @@ export default function LoginPage() {
 						href={localePath("/auth/register")}
 						className="text-[var(--color-primary)] hover:underline font-medium"
 					>
-						Sign Up
+						Create Account
 					</Link>
 				</p>
 			</div>

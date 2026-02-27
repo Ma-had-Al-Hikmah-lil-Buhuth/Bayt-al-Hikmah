@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getDictionary } from "@/dictionaries";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/auth";
 import { localePath } from "@/lib/utils";
 import { AdminSidebarClient } from "@/components/admin/AdminSidebar";
 
@@ -12,28 +12,15 @@ export default async function AdminLayout({
 	const dict = await getDictionary();
 	const a = dict.admin;
 
-	// Auth guard
-	try {
-		const supabase = await createServerSupabaseClient();
-		const {
-			data: { user },
-		} = await supabase.auth.getUser();
+	// Auth guard — JWT-based
+	const user = await getCurrentUser();
 
-		if (!user) {
-			redirect(localePath("/auth/login"));
-		}
+	if (!user) {
+		redirect(localePath("/auth/login"));
+	}
 
-		const { data: profile } = await supabase
-			.from("profiles")
-			.select("role")
-			.eq("id", user.id)
-			.single();
-
-		if (profile?.role !== "admin") {
-			redirect(localePath("/"));
-		}
-	} catch {
-		// Allow render for demo/dev
+	if (!user.isAdmin) {
+		redirect(localePath("/"));
 	}
 
 	const navItems = [
