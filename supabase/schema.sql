@@ -254,6 +254,24 @@ $$;
 CREATE OR REPLACE FUNCTION public.set_updated_at()
 RETURNS TRIGGER LANGUAGE plpgsql AS
 $$
+BEGIN
+NEW.updated_at = NOW();
+RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER trg_books_updated BEFORE UPDATE ON public.books
+FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+CREATE TRIGGER trg_authors_updated BEFORE UPDATE ON public.authors
+FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+CREATE TRIGGER trg_users_updated BEFORE UPDATE ON public.users
+FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+-- ============================================================================
+-- 10. ROW-LEVEL SECURITY
+-- ============================================================================
 ALTER TABLE public.authors ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.books ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.book_translations ENABLE ROW LEVEL SECURITY;
@@ -267,21 +285,6 @@ CREATE POLICY "Books are publicly readable" ON public.books
 FOR SELECT USING (TRUE);
 
 CREATE POLICY "Book translations are publicly readable" ON public.book_translations
-FOR SELECT USING (TRUE);
-
-CREATE POLICY "Tags are publicly readable" ON public.tags
-FOR SELECT USING (TRUE);=======================================================
--- 10. ROW-LEVEL SECURITY
--- ============================================================================
-ALTER TABLE public.authors ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.books ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.tags ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.download_logs ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Authors are publicly readable" ON public.authors
-FOR SELECT USING (TRUE);
-
-CREATE POLICY "Books are publicly readable" ON public.books
 FOR SELECT USING (TRUE);
 
 CREATE POLICY "Tags are publicly readable" ON public.tags

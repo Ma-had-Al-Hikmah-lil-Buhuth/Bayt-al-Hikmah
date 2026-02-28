@@ -809,7 +809,6 @@ const Section = ({
 interface UploadBookFormProps {
 	dict: any;
 	categories: any[];
-	authors: any[];
 }
 
 export function UploadBookForm({ dict, categories }: UploadBookFormProps) {

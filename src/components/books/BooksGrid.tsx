@@ -17,6 +17,9 @@ interface BooksGridProps {
 	currentPage: number;
 	totalPages: number;
 	searchQuery: string;
+	activeCategory?: string;
+	activeLanguage?: string;
+	activeSort?: string;
 }
 
 export function BooksGrid({
@@ -25,9 +28,23 @@ export function BooksGrid({
 	currentPage,
 	totalPages,
 	searchQuery,
+	activeCategory,
+	activeLanguage,
+	activeSort,
 }: BooksGridProps) {
 	const c = dict.common;
 	const s = dict.search;
+
+	/** Build a pagination href preserving all current filters */
+	const pageHref = (page: number) => {
+		const params = new URLSearchParams();
+		params.set("page", String(page));
+		if (searchQuery) params.set("q", searchQuery);
+		if (activeCategory) params.set("category", activeCategory);
+		if (activeLanguage) params.set("language", activeLanguage);
+		if (activeSort && activeSort !== "relevance") params.set("sort", activeSort);
+		return localePath(`/books?${params.toString()}`);
+	};
 
 	if (books.length === 0) {
 		return (
@@ -117,9 +134,7 @@ export function BooksGrid({
 				<div className="mt-8 flex items-center justify-center gap-2">
 					{currentPage > 1 && (
 						<Link
-							href={localePath(
-								`/books?page=${currentPage - 1}${searchQuery ? `&q=${searchQuery}` : ""}`
-							)}
+							href={pageHref(currentPage - 1)}
 							className="flex items-center gap-1 rounded-lg border border-[var(--color-border)] px-4 py-2 text-sm hover:bg-[var(--color-border)] transition-colors"
 						>
 							<ChevronLeft className="h-4 w-4 flip-rtl" />
@@ -134,9 +149,7 @@ export function BooksGrid({
 
 					{currentPage < totalPages && (
 						<Link
-							href={localePath(
-								`/books?page=${currentPage + 1}${searchQuery ? `&q=${searchQuery}` : ""}`
-							)}
+							href={pageHref(currentPage + 1)}
 							className="flex items-center gap-1 rounded-lg border border-[var(--color-border)] px-4 py-2 text-sm hover:bg-[var(--color-border)] transition-colors"
 						>
 							{dict.book.nextPage}

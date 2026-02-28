@@ -18,13 +18,29 @@ export const PATCH = async (
 		const { id } = await params;
 		const body = await request.json();
 
+		// Whitelist allowed fields
+		const ALLOWED_FIELDS = [
+			"title",
+			"author_id",
+			"translator_id",
+			"category_id",
+			"language_code",
+			"description",
+			"is_downloadable",
+			"is_featured",
+			"page_count",
+			"cover_image_url",
+		];
+
+		const updatePayload: Record<string, any> = {};
+		for (const key of ALLOWED_FIELDS) {
+			if (key in body) updatePayload[key] = body[key];
+		}
+
 		const supabase = await createAdminSupabaseClient();
 		const { data, error } = await supabase
 			.from("books")
-			.update({
-				...body,
-				updated_at: new Date().toISOString(),
-			})
+			.update(updatePayload)
 			.eq("id", Number(id))
 			.select()
 			.single();

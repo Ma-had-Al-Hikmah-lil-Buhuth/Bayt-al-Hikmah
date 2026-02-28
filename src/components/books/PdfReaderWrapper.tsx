@@ -15,7 +15,7 @@ const PdfReader = dynamic(
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface PdfReaderWrapperProps {
 	pdfUrl: string;
-	bookId: string;
+	bookId: number | string;
 	dict: any;
 }
 

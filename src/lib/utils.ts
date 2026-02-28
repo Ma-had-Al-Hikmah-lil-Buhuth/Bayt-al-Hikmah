@@ -7,9 +7,10 @@ export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
-/** Resolve a multilingual JSONB field to English */
+/** Resolve a multilingual JSONB field — prefer English, then first available */
 export function t(field: MultiLang | undefined | null): string {
 	if (!field) return "";
+	if (typeof field === "string") return field;
 	return field.en || Object.values(field).find(Boolean) || "";
 }
 

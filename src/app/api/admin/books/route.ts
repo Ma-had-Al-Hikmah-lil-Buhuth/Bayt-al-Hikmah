@@ -29,9 +29,25 @@ export const POST = async (request: NextRequest) => {
 
 		const title: Record<string, string> = { [languageCode]: titleText };
 
+		// Generate a unique slug
+		let slug = slugify(titleText);
+		const { data: existingSlugs } = await supabase
+			.from("books")
+			.select("slug")
+			.like("slug", `${slug}%`);
+
+		if (existingSlugs && existingSlugs.length > 0) {
+			const usedSlugs = new Set(existingSlugs.map((r: any) => r.slug));
+			if (usedSlugs.has(slug)) {
+				let suffix = 2;
+				while (usedSlugs.has(`${slug}-${suffix}`)) suffix++;
+				slug = `${slug}-${suffix}`;
+			}
+		}
+
 		const authorId = formData.get("author_id") as string;
 		const categoryId = formData.get("category_id") as string;
-		const descriptionEn = formData.get("description_en") as string;
+		const descriptionText = (formData.get("description_en") as string)?.trim();
 		const isDownloadable = formData.has("is_downloadable");
 		const isFeatured = formData.has("is_featured");
 
@@ -49,7 +65,6 @@ export const POST = async (request: NextRequest) => {
 			);
 		}
 
-		const slug = slugify(titleText);
 		const pdfPath = `books/${slug}/${pdfFile.name}`;
 		const pdfBuffer = Buffer.from(await pdfFile.arrayBuffer());
 
@@ -94,7 +109,7 @@ export const POST = async (request: NextRequest) => {
 			slug,
 			category_id: categoryId,
 			language_code: languageCode,
-			description: descriptionEn ? { en: descriptionEn } : {},
+			description: descriptionText ? { [languageCode]: descriptionText } : {},
 			pdf_url: pdfUrl,
 			cover_image_url: coverUrl,
 			is_downloadable: isDownloadable,

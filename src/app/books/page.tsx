@@ -158,6 +158,9 @@ export default async function BooksPage({
 							currentPage={page}
 							totalPages={totalPages}
 							searchQuery={query}
+							activeCategory={category}
+							activeLanguage={language}
+							activeSort={sort}
 						/>
 					</Suspense>
 				</div>

@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { getDictionary } from "@/dictionaries";
 import categoriesJson from "@/lib/categories.json";
-import { localePath, t } from "@/lib/utils";
+import { localePath, t, formatCount } from "@/lib/utils";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import {
 	getSampleFeaturedBooks,
@@ -30,21 +30,22 @@ export default async function HomePage() {
 	try {
 		const supabase = await createServerSupabaseClient();
 
-		const [booksRes, authorsRes] = await Promise.all([
+		const [booksRes, totalBooksRes, authorsRes] = await Promise.all([
 			supabase
 				.from("books")
 				.select("*, author:authors(*)")
 				.eq("is_featured", true)
 				.order("view_count", { ascending: false })
 				.limit(8),
-			supabase.from("authors").select("id"),
+			supabase.from("books").select("id", { count: "exact", head: true }),
+			supabase.from("authors").select("id", { count: "exact", head: true }),
 		]);
 
 		featuredBooks = booksRes.data ?? [];
 		stats = {
-			books: featuredBooks.length,
+			books: totalBooksRes.count ?? 0,
 			downloads: 0,
-			authors: authorsRes.data?.length ?? 0,
+			authors: authorsRes.count ?? 0,
 		};
 	} catch {
 		// Supabase not configured — use sample data
@@ -97,13 +98,13 @@ export default async function HomePage() {
 					{/* Stats */}
 					<div className="mt-16 grid grid-cols-3 gap-8 max-w-lg">
 						{[
-							{ icon: BookOpen, label: "Books", value: "5,000+" },
+							{ icon: BookOpen, label: h.books ?? "Books", value: stats.books > 0 ? formatCount(stats.books) : "5,000+" },
 							{
 								icon: Download,
-								label: "Downloads",
-								value: "100K+",
+								label: h.downloads ?? "Downloads",
+								value: stats.downloads > 0 ? formatCount(stats.downloads) : "100K+",
 							},
-							{ icon: Users, label: "Scholars", value: "200+" },
+							{ icon: Users, label: h.scholars ?? "Scholars", value: stats.authors > 0 ? formatCount(stats.authors) : "200+" },
 						].map(({ icon: Icon, label, value }) => (
 							<div key={label} className="text-center">
 								<Icon className="mx-auto h-8 w-8 mb-2 text-[var(--color-accent)]" />

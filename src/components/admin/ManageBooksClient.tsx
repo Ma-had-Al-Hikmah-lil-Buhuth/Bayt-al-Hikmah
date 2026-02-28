@@ -117,7 +117,6 @@ export function ManageBooksClient({
 			language_code: form.get("language_code"),
 			is_downloadable: form.get("is_downloadable") === "on",
 			is_featured: form.get("is_featured") === "on",
-			copyright: form.get("copyright"),
 			description: { en: form.get("description_en") as string },
 		};
 
@@ -268,11 +267,7 @@ export function ManageBooksClient({
 														{t(book.title)}
 													</p>
 													<p className="text-xs text-[var(--color-text-muted)] uppercase">
-														{book.language_code} •{" "}
-														{book.copyright?.replace(
-															"_",
-															" "
-														)}
+														{book.language_code}
 													</p>
 												</div>
 											</div>
@@ -462,26 +457,6 @@ export function ManageBooksClient({
 									<option value="en">English</option>
 									<option value="bn">বাংলা</option>
 									<option value="ur">اردو</option>
-								</select>
-							</div>
-							<div>
-								<label className="text-sm font-semibold block mb-1">
-									Copyright
-								</label>
-								<select
-									name="copyright"
-									defaultValue={editTarget.copyright}
-									className="w-full rounded-lg border border-[var(--color-border)] px-3 py-2 text-sm focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none"
-								>
-									<option value="public_domain">
-										Public Domain
-									</option>
-									<option value="permission_granted">
-										Permission Granted
-									</option>
-									<option value="restricted">
-										Restricted
-									</option>
 								</select>
 							</div>
 						</div>

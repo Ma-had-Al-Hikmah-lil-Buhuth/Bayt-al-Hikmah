@@ -20,7 +20,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/b
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface PdfReaderProps {
 	pdfUrl: string;
-	bookId: string;
+	bookId: number | string;
 	dict: any;
 }
 

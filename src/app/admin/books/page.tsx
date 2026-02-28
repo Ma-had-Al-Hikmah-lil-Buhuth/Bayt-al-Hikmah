@@ -1,6 +1,6 @@
 import { getDictionary } from "@/dictionaries";
 import categoriesJson from "@/lib/categories.json";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createAdminSupabaseClient } from "@/lib/supabase/server";
 import { ManageBooksClient } from "@/components/admin/ManageBooksClient";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -12,7 +12,7 @@ export default async function ManageBooksPage() {
 	let authors: any[] = [];
 
 	try {
-		const supabase = await createServerSupabaseClient();
+		const supabase = await createAdminSupabaseClient();
 		const [booksRes, authorsRes] = await Promise.all([
 			supabase
 				.from("books")

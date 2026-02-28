@@ -11,7 +11,6 @@ export default async function NewBookPage() {
 			<UploadBookForm
 				dict={dict}
 				categories={categories}
-				authors={[]}
 			/>
 		</div>
 	);
