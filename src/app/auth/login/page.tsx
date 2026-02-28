@@ -3,11 +3,25 @@
 import { BookOpen, Loader2, Lock, Mail } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { localePath } from "@/lib/utils";
 
 export default function LoginPage() {
+	return (
+		<Suspense
+			fallback={
+				<div className="min-h-[calc(100vh-8rem)] flex items-center justify-center">
+					<Loader2 className="h-8 w-8 animate-spin text-[var(--color-primary)]" />
+				</div>
+			}
+		>
+			<LoginForm />
+		</Suspense>
+	);
+}
+
+const LoginForm = () => {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const redirectTo = searchParams.get("redirect") || "/";
@@ -131,4 +145,4 @@ export default function LoginPage() {
 			</div>
 		</div>
 	);
-}
+};
